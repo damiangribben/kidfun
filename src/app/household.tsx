@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { SegmentedTabs } from '@/components/ui/segmented-tabs';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
-import { useAuth, type Household } from '@/lib/auth';
+import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
 export default function HouseholdScreen() {
@@ -30,8 +30,7 @@ export default function HouseholdScreen() {
       setError(error.message);
       return;
     }
-    const { id, name: householdName, invite_code } = data as Household;
-    setHousehold({ id, name: householdName, invite_code });
+    setHousehold({ id: data.id, name: data.name, invite_code: data.invite_code });
   }
 
   return (
