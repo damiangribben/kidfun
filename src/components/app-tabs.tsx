@@ -20,6 +20,11 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="toys">
+        <NativeTabs.Trigger.Label>Toys</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="teddybear.fill" md="toys" />
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="family">
         <NativeTabs.Trigger.Label>Family</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="person.2.fill" md="family_restroom" />
