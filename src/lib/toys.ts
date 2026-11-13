@@ -85,3 +85,12 @@ export async function parseToyList(text: string): Promise<DetectedToy[]> {
   const { toys } = await invoke<{ toys: DetectedToy[] }>('parse-toys', { text });
   return toys;
 }
+
+/** Sends a JPEG photo to Claude and returns the toys it can see. */
+export async function detectToysInPhoto(base64Jpeg: string): Promise<DetectedToy[]> {
+  const { toys } = await invoke<{ toys: DetectedToy[] }>('photo-toys', {
+    image: base64Jpeg,
+    mediaType: 'image/jpeg',
+  });
+  return toys;
+}

@@ -33,7 +33,17 @@
           "imageWidth": 76
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose photos of your toys so they can be added to your inventory.",
+          "cameraPermission": "Take photos of your toys so they can be added to your inventory.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

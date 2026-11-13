@@ -92,6 +92,7 @@ function normalise(raw: unknown): DetectedToy[] {
 export async function detectToys(
   instructions: string,
   content: Anthropic.Beta.BetaContentBlockParam[],
+  effort: "low" | "medium" = "low",
 ): Promise<DetectedToy[]> {
   const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
 
@@ -101,7 +102,7 @@ export async function detectToys(
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
     output_config: {
-      effort: "low",
+      effort,
       format: { type: "json_schema", schema: OUTPUT_SCHEMA },
     },
     system: `${TOY_GUIDANCE}\n\n${instructions}`,
