@@ -1,7 +1,6 @@
-import { FunctionsHttpError } from '@supabase/supabase-js';
-
 import type { Tables, TablesInsert } from '@/lib/database.types';
 import { FriendlyError } from '@/lib/family';
+import { invokeFunction as invoke } from '@/lib/functions';
 import { supabase } from '@/lib/supabase';
 
 // Must match the check constraint on public.toys.category.
@@ -57,27 +56,16 @@ export async function saveToy(id: string, input: ToyInput): Promise<void> {
   if (error) throw new FriendlyError(error.message);
 }
 
-export async function addToys(toys: ToyInput[]): Promise<void> {
-  const { error } = await supabase.from('toys').insert(toys);
+/** Adds toys and returns their new ids. */
+export async function addToys(toys: ToyInput[]): Promise<string[]> {
+  const { data, error } = await supabase.from('toys').insert(toys).select('id');
   if (error) throw new FriendlyError(error.message);
+  return data.map((t) => t.id);
 }
 
 export async function deleteToy(id: string): Promise<void> {
   const { error } = await supabase.from('toys').delete().eq('id', id);
   if (error) throw new FriendlyError(error.message);
-}
-
-/** Calls an Edge Function and turns its error body into a message for the parent. */
-async function invoke<T>(name: string, body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke<T>(name, { body });
-  if (error) {
-    if (error instanceof FunctionsHttpError) {
-      const details = await error.context.json().catch(() => null);
-      throw new FriendlyError(details?.error ?? 'Something went wrong. Please try again.');
-    }
-    throw new FriendlyError('Couldn’t reach the server. Check your connection and try again.');
-  }
-  return data as T;
 }
 
 /** Sends a typed or dictated list to Claude and returns the toys it found. */
@@ -91,6 +79,18 @@ export async function detectToysInPhoto(base64Jpeg: string): Promise<DetectedToy
   const { toys } = await invoke<{ toys: DetectedToy[] }>('photo-toys', {
     image: base64Jpeg,
     mediaType: 'image/jpeg',
+  });
+  return toys;
+}
+
+export type SpottedToy = DetectedToy & { existing_toy_id: string | null };
+
+/** Like detectToysInPhoto, but also matches each toy against the toys kept at a place. */
+export async function spotToysAtPlace(base64Jpeg: string, placeId: string): Promise<SpottedToy[]> {
+  const { toys } = await invoke<{ toys: SpottedToy[] }>('photo-toys', {
+    image: base64Jpeg,
+    mediaType: 'image/jpeg',
+    placeId,
   });
   return toys;
 }

@@ -9,22 +9,33 @@ import { Button } from '@/components/ui/button';
 import { ListRow } from '@/components/ui/list-row';
 import { Spacing } from '@/constants/theme';
 import { ageLabel, parseDate } from '@/lib/dates';
-import { errorMessage, listChildren, listPlaces, type Child, type Place } from '@/lib/family';
+import { HouseholdCard } from '@/components/household-card';
+import {
+  errorMessage,
+  listChildren,
+  listParents,
+  listPlaces,
+  type Child,
+  type Parent,
+  type Place,
+} from '@/lib/family';
 
 export default function FamilyScreen() {
   const [children, setChildren] = useState<Child[] | null>(null);
   const [places, setPlaces] = useState<Place[] | null>(null);
+  const [parents, setParents] = useState<Parent[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   // Reload whenever the screen comes back into view, e.g. after saving an edit.
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      Promise.all([listChildren(), listPlaces()])
-        .then(([loadedChildren, loadedPlaces]) => {
+      Promise.all([listChildren(), listPlaces(), listParents()])
+        .then(([loadedChildren, loadedPlaces, loadedParents]) => {
           if (!active) return;
           setChildren(loadedChildren);
           setPlaces(loadedPlaces);
+          setParents(loadedParents);
           setError(null);
         })
         .catch((e) => active && setError(errorMessage(e)));
@@ -71,6 +82,8 @@ export default function FamilyScreen() {
         ))}
         <Button title="Add place" variant="secondary" onPress={() => router.push('/family/place')} />
       </View>
+
+      <HouseholdCard parents={parents} />
     </ScrollScreen>
   );
 }

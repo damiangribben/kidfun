@@ -81,6 +81,33 @@ export async function deletePlace(id: string): Promise<void> {
   }
 }
 
+// Parents ----------------------------------------------------------------------
+
+export type Parent = { userId: string; displayName: string | null };
+
+export async function listParents(): Promise<Parent[]> {
+  const { data, error } = await supabase
+    .from('household_members')
+    .select('user_id, display_name')
+    .order('joined_at');
+  if (error) fail(error);
+  return data.map((m) => ({ userId: m.user_id, displayName: m.display_name }));
+}
+
+export async function setMyDisplayName(userId: string, name: string): Promise<void> {
+  const { error } = await supabase
+    .from('household_members')
+    .update({ display_name: name || null })
+    .eq('user_id', userId);
+  if (error) fail(error);
+}
+
+/** "You", or the other parent's name, for showing in the app. */
+export function parentLabel(parent: Parent, myUserId: string | undefined): string {
+  if (parent.userId === myUserId) return parent.displayName ? `${parent.displayName} (you)` : 'You';
+  return parent.displayName ?? 'Your partner';
+}
+
 export function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
 }

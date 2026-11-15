@@ -235,6 +235,7 @@ export type Database = {
           id: string
           name: string
           pitch: string
+          saved_at: string | null
           supervise_closely: boolean
         }
         Insert: {
@@ -245,6 +246,7 @@ export type Database = {
           id?: string
           name: string
           pitch: string
+          saved_at?: string | null
           supervise_closely?: boolean
         }
         Update: {
@@ -255,6 +257,7 @@ export type Database = {
           id?: string
           name?: string
           pitch?: string
+          saved_at?: string | null
           supervise_closely?: boolean
         }
         Relationships: [
@@ -392,7 +395,29 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      match_saved_ideas: {
+        Args: { chosen_child_ids: string[]; chosen_toy_ids: string[] }
+        Returns: {
+          all_toys_chosen: boolean
+          idea_id: string
+          same_players: boolean
+          score: number
+          shared_toys: number
+        }[]
+      }
       my_household_id: { Args: never; Returns: string }
+      save_idea: {
+        Args: {
+          child_ids: string[]
+          idea_content: Json
+          idea_name: string
+          idea_pitch: string
+          parent_ids: string[]
+          supervise: boolean
+          toy_ids: string[]
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

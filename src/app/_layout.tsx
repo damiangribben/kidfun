@@ -34,6 +34,8 @@ function RootNavigator() {
         </Stack.Protected>
         <Stack.Protected guard={!!session && !!household}>
           <Stack.Screen name="(app)" />
+          <Stack.Screen name="ideas" />
+          <Stack.Screen name="idea" />
         </Stack.Protected>
       </Stack>
     </>
