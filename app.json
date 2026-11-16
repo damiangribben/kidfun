@@ -1,36 +1,34 @@
 {
   "expo": {
-    "name": "dormant-toys",
-    "slug": "dormant-toys",
+    "name": "Kidfun",
+    "slug": "kidfun",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "dormanttoys",
+    "scheme": "kidfun",
     "userInterfaceStyle": "automatic",
+    "platforms": ["ios", "android"],
     "ios": {
-      "icon": "./assets/expo.icon"
+      "bundleIdentifier": "com.damiangribben.kidfun"
     },
     "android": {
+      "package": "com.damiangribben.kidfun",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFC845",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
-    "web": {
-      "output": "server",
-      "favicon": "./assets/images/favicon.png"
-    },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#FFC845",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 120
         }
       ],
       "@react-native-community/datetimepicker",

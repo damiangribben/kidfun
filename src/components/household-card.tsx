@@ -84,7 +84,7 @@ export function HouseholdCard({ parents }: { parents: Parent[] }) {
             title="Share code"
             variant="secondary"
             onPress={() =>
-              Share.share({ message: `Join our household in the toy ideas app with code ${code}` })
+              Share.share({ message: `Join our household in Kidfun with code ${code}` })
             }
           />
         </ThemedView>
