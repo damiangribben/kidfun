@@ -10,7 +10,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ToyReview } from '@/components/toy-review';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
-import { Spacing } from '@/constants/theme';
+import { Palette, Spacing } from '@/constants/theme';
 import { errorMessage, listPlaces, type Place } from '@/lib/family';
 import type { PreparedPhoto } from '@/lib/photos';
 import {
@@ -163,11 +163,15 @@ const styles = StyleSheet.create({
   photo: {
     width: 200,
     height: 150,
-    borderRadius: Spacing.three,
+    borderRadius: 14,
+    borderWidth: 3,
+    borderColor: Palette.ink,
   },
   singlePhoto: {
     width: 320,
     height: 240,
-    borderRadius: Spacing.three,
+    borderRadius: 14,
+    borderWidth: 3,
+    borderColor: Palette.ink,
   },
 });

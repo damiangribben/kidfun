@@ -1,8 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { brutal, Fonts, Palette, Spacing } from '@/constants/theme';
 
 type Option<T extends string> = { value: T; label: string };
 
@@ -13,19 +12,15 @@ type SegmentedTabsProps<T extends string> = {
   disabled?: boolean;
 };
 
-/** A pill-style switch between a few in-screen tabs. */
+/** An outlined switch between a few in-screen tabs; the selected one is a blue block. */
 export function SegmentedTabs<T extends string>({
   options,
   value,
   onChange,
   disabled,
 }: SegmentedTabsProps<T>) {
-  const theme = useTheme();
-
   return (
-    <View
-      accessibilityRole="tablist"
-      style={[styles.track, { backgroundColor: theme.backgroundElement }]}>
+    <View accessibilityRole="tablist" style={[styles.track, brutal({ radius: 16 })]}>
       {options.map((option) => {
         const selected = option.value === value;
         return (
@@ -35,10 +30,9 @@ export function SegmentedTabs<T extends string>({
             accessibilityState={{ selected, disabled }}
             disabled={disabled}
             onPress={() => onChange(option.value)}
-            style={[styles.tab, selected && { backgroundColor: theme.background }]}>
+            style={[styles.tab, selected && [styles.selected, brutal({ radius: 10, shadow: 2, border: 2.5 })]]}>
             <ThemedText
-              type={selected ? 'smallBold' : 'small'}
-              themeColor={selected ? 'text' : 'textSecondary'}>
+              style={[styles.label, { color: selected ? Palette.white : '#5B6478' }]}>
               {option.label}
             </ThemedText>
           </Pressable>
@@ -51,14 +45,23 @@ export function SegmentedTabs<T extends string>({
 const styles = StyleSheet.create({
   track: {
     flexDirection: 'row',
-    padding: Spacing.one,
-    borderRadius: Spacing.three,
+    padding: Spacing.one + 2,
+    gap: Spacing.one,
+    backgroundColor: Palette.white,
   },
   tab: {
     flex: 1,
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: Spacing.three - Spacing.one,
+  },
+  selected: {
+    backgroundColor: Palette.blue,
+  },
+  label: {
+    fontFamily: Fonts.display,
+    fontSize: 15,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 });

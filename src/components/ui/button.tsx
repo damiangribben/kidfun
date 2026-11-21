@@ -1,8 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { brutal, Fonts, Palette, Spacing } from '@/constants/theme';
 
 type ButtonProps = {
   title: string;
@@ -12,10 +11,13 @@ type ButtonProps = {
   busy?: boolean;
 };
 
+const SHADOW = 4;
+
+/** A chunky outlined button that presses down into its shadow when tapped. */
 export function Button({ title, onPress, variant = 'primary', disabled, busy }: ButtonProps) {
-  const theme = useTheme();
   const primary = variant === 'primary';
   const inactive = disabled || busy;
+  const textColor = primary ? Palette.white : Palette.blue;
 
   return (
     <Pressable
@@ -25,13 +27,15 @@ export function Button({ title, onPress, variant = 'primary', disabled, busy }: 
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: primary ? theme.text : theme.backgroundElement },
-        (pressed || inactive) && styles.dimmed,
+        brutal({ shadow: SHADOW }),
+        { backgroundColor: primary ? Palette.blue : Palette.white },
+        pressed && styles.pressed,
+        inactive && styles.dimmed,
       ]}>
       {busy ? (
-        <ActivityIndicator color={primary ? theme.background : theme.text} />
+        <ActivityIndicator color={textColor} />
       ) : (
-        <ThemedText style={{ color: primary ? theme.background : theme.text }}>{title}</ThemedText>
+        <ThemedText style={[styles.label, { color: textColor }]}>{title}</ThemedText>
       )}
     </Pressable>
   );
@@ -39,13 +43,24 @@ export function Button({ title, onPress, variant = 'primary', disabled, busy }: 
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 48,
-    borderRadius: Spacing.three,
+    minHeight: 56,
     paddingHorizontal: Spacing.four,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  label: {
+    fontFamily: Fonts.display,
+    fontSize: 18,
+    lineHeight: 24,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  pressed: {
+    transform: [{ translateX: SHADOW }, { translateY: SHADOW }],
+    boxShadow: [],
+  },
   dimmed: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
 });

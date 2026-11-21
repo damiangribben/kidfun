@@ -3,8 +3,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { FormError } from '@/components/form-screen';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { ChipGroup } from '@/components/ui/chip-group';
 import { SwitchField } from '@/components/ui/switch-field';
 import { TextField } from '@/components/ui/text-field';
@@ -79,7 +79,7 @@ export function ToyReview({
       </ThemedText>
 
       {drafts.map((draft) => (
-        <ThemedView key={draft.key} type="backgroundElement" style={styles.card}>
+        <Card key={draft.key} style={styles.card}>
           <View style={styles.cardHeader}>
             <View style={styles.flex}>
               <TextField
@@ -87,7 +87,6 @@ export function ToyReview({
                 value={draft.name}
                 onChangeText={(name) => update(draft.key, { name })}
                 maxLength={80}
-                style={styles.cardInput}
               />
             </View>
             <Pressable
@@ -116,7 +115,7 @@ export function ToyReview({
             value={draft.small_parts}
             onChange={(small_parts) => update(draft.key, { small_parts })}
           />
-        </ThemedView>
+        </Card>
       ))}
 
       {drafts.length > 0 && (
@@ -153,8 +152,6 @@ export function ToyReview({
 const styles = StyleSheet.create({
   card: {
     gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -163,12 +160,6 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
-  },
-  cardInput: {
-    // Inputs sit on a card, so use the page background for contrast.
-    backgroundColor: 'transparent',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#8888',
   },
   remove: {
     minHeight: 48,

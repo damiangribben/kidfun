@@ -3,8 +3,8 @@ import { Share, StyleSheet, View } from 'react-native';
 
 import { FormError } from '@/components/form-screen';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
@@ -72,7 +72,7 @@ export function HouseholdCard({ parents }: { parents: Parent[] }) {
       </ThemedText>
 
       {!partnerJoined && (
-        <ThemedView type="backgroundElement" style={styles.card}>
+        <Card style={styles.card}>
           <ThemedText type="smallBold">Invite code</ThemedText>
           <ThemedText type="subtitle" selectable accessibilityLabel={code.split('').join(' ')}>
             {code}
@@ -87,7 +87,7 @@ export function HouseholdCard({ parents }: { parents: Parent[] }) {
               Share.share({ message: `Join our household in Kidfun with code ${code}` })
             }
           />
-        </ThemedView>
+        </Card>
       )}
 
       <FormError message={error} />
@@ -110,7 +110,5 @@ const styles = StyleSheet.create({
   },
   card: {
     gap: Spacing.two,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
   },
 });

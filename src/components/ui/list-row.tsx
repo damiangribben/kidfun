@@ -1,8 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { brutal, Fonts, Palette, Spacing } from '@/constants/theme';
 
 type ListRowProps = {
   title: string;
@@ -10,27 +9,24 @@ type ListRowProps = {
   onPress: () => void;
 };
 
-export function ListRow({ title, subtitle, onPress }: ListRowProps) {
-  const theme = useTheme();
+const SHADOW = 4;
 
+export function ListRow({ title, subtitle, onPress }: ListRowProps) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={subtitle ? `${title}, ${subtitle}` : title}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.row,
-        { backgroundColor: pressed ? theme.backgroundSelected : theme.backgroundElement },
-      ]}>
+      style={({ pressed }) => [styles.row, brutal({ radius: 14, shadow: SHADOW }), pressed && styles.pressed]}>
       <View style={styles.text}>
-        <ThemedText>{title}</ThemedText>
+        <ThemedText style={styles.title}>{title}</ThemedText>
         {subtitle && (
           <ThemedText type="small" themeColor="textSecondary">
             {subtitle}
           </ThemedText>
         )}
       </View>
-      <ThemedText themeColor="textSecondary" importantForAccessibility="no">
+      <ThemedText style={styles.chevron} importantForAccessibility="no">
         ›
       </ThemedText>
     </Pressable>
@@ -39,16 +35,31 @@ export function ListRow({ title, subtitle, onPress }: ListRowProps) {
 
 const styles = StyleSheet.create({
   row: {
-    minHeight: 56,
+    minHeight: 60,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.three,
+    paddingLeft: Spacing.three + 4,
+    paddingRight: Spacing.three,
+    paddingVertical: Spacing.two + 4,
+    backgroundColor: Palette.white,
+  },
+  pressed: {
+    transform: [{ translateX: SHADOW }, { translateY: SHADOW }],
+    boxShadow: [],
   },
   text: {
     flex: 1,
     gap: Spacing.half,
+  },
+  title: {
+    fontFamily: Fonts.bodyBold,
+    fontSize: 17,
+  },
+  chevron: {
+    fontFamily: Fonts.bodyBold,
+    fontSize: 26,
+    lineHeight: 28,
+    color: Palette.ink,
   },
 });

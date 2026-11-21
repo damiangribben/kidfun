@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Chip } from '@/components/ui/chip';
 import { ChipGroup } from '@/components/ui/chip-group';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { guestLabel, type GuestChild } from '@/lib/ideas';
 
 const MAX_GUESTS = 6;
@@ -26,7 +26,6 @@ type GuestChildrenProps = {
 
 /** Friends playing today: added on the spot, removable, never saved. */
 export function GuestChildren({ guests, onChange }: GuestChildrenProps) {
-  const theme = useTheme();
   const [adding, setAdding] = useState(false);
   const [gender, setGender] = useState<GuestChild['gender']>('unspecified');
   const [age, setAge] = useState<string | null>(null);
@@ -44,22 +43,20 @@ export function GuestChildren({ guests, onChange }: GuestChildrenProps) {
       {guests.length > 0 && (
         <View style={styles.chips}>
           {guests.map((guest, i) => (
-            <Pressable
+            <Chip
               key={i}
+              label={`${guestLabel(guest)} ×`}
+              selected
               accessibilityRole="button"
               accessibilityLabel={`Remove ${guestLabel(guest)}`}
               onPress={() => onChange(guests.filter((_, j) => j !== i))}
-              style={[styles.chip, { backgroundColor: theme.text }]}>
-              <ThemedText type="small" style={{ color: theme.background }}>
-                {guestLabel(guest)} ×
-              </ThemedText>
-            </Pressable>
+            />
           ))}
         </View>
       )}
 
       {adding ? (
-        <ThemedView type="backgroundElement" style={styles.card}>
+        <Card style={styles.card}>
           <ChipGroup label="Friend is a" options={GENDERS} value={gender} onChange={setGender} />
           <ChipGroup label="Age" options={AGES} value={age ?? ''} onChange={setAge} />
           <View style={styles.row}>
@@ -70,7 +67,7 @@ export function GuestChildren({ guests, onChange }: GuestChildrenProps) {
               <Button title="Add friend" onPress={add} disabled={!age} />
             </View>
           </View>
-        </ThemedView>
+        </Card>
       ) : (
         guests.length < MAX_GUESTS && (
           <Button title="+ Add a friend" variant="secondary" onPress={() => setAdding(true)} />
@@ -102,8 +99,6 @@ const styles = StyleSheet.create({
   },
   card: {
     gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
   },
   row: {
     flexDirection: 'row',

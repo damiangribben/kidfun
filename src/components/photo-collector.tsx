@@ -5,8 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { FormError } from '@/components/form-screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { brutal, Palette, Spacing } from '@/constants/theme';
 import { errorMessage } from '@/lib/family';
 import { MAX_PHOTOS, pickPhotos, type PreparedPhoto } from '@/lib/photos';
 
@@ -25,7 +24,6 @@ type PhotoCollectorProps = {
  * gallery), shows them as thumbnails that can be removed, then sends them together.
  */
 export function PhotoCollector({ submitLabel, busyLabel, busy, onSubmit, onCancel }: PhotoCollectorProps) {
-  const theme = useTheme();
   const [photos, setPhotos] = useState<PreparedPhoto[]>([]);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,8 +62,8 @@ export function PhotoCollector({ submitLabel, busyLabel, busy, onSubmit, onCance
                 onPress={() => setPhotos((current) => current.filter((p) => p.uri !== photo.uri))}
                 disabled={locked}
                 hitSlop={8}
-                style={[styles.remove, { backgroundColor: theme.text }]}>
-                <ThemedText type="smallBold" style={{ color: theme.background }}>
+                style={[styles.remove, brutal({ radius: 14, shadow: 2, border: 2 })]}>
+                <ThemedText type="smallBold" style={{ color: Palette.white }}>
                   ×
                 </ThemedText>
               </Pressable>
@@ -127,7 +125,9 @@ const styles = StyleSheet.create({
   thumb: {
     width: 88,
     height: 88,
-    borderRadius: Spacing.two,
+    borderRadius: 12,
+    borderWidth: 3,
+    borderColor: Palette.ink,
   },
   remove: {
     position: 'absolute',
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     right: -6,
     width: 26,
     height: 26,
-    borderRadius: 13,
+    backgroundColor: Palette.red,
     alignItems: 'center',
     justifyContent: 'center',
   },

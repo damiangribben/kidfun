@@ -7,6 +7,7 @@ import { IdeaCard } from '@/components/idea-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
+import { headerTitle, stackHeader } from '@/constants/navigation';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { errorMessage } from '@/lib/family';
 import {
@@ -97,7 +98,7 @@ export default function IdeasScreen() {
 
   return (
     <ThemedView style={styles.fill}>
-      <Stack.Screen options={{ headerShown: true, title: 'Ideas', headerShadowVisible: false }} />
+      <Stack.Screen options={{ ...stackHeader, headerShown: true, title: headerTitle('Ideas') }} />
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
         {!ideas && !error && <ThemedText themeColor="textSecondary">Loading…</ThemedText>}
 

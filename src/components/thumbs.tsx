@@ -1,8 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { brutal, Fonts, Palette, Spacing } from '@/constants/theme';
 import type { Rating } from '@/lib/ideas';
 
 type ThumbsProps = {
@@ -12,11 +11,9 @@ type ThumbsProps = {
   disabled?: boolean;
 };
 
-/** Thumbs up/down for an idea. Tapping your current choice again clears it. */
+/** Thumbs up/down for an idea: green or red when chosen. Tapping your choice again clears it. */
 export function Thumbs({ myRating, score, onRate, disabled }: ThumbsProps) {
-  const theme = useTheme();
-
-  function thumb(value: 1 | -1, emoji: string, label: string) {
+  function thumb(value: 1 | -1, emoji: string, label: string, colour: string) {
     const selected = myRating === value;
     return (
       <Pressable
@@ -27,7 +24,8 @@ export function Thumbs({ myRating, score, onRate, disabled }: ThumbsProps) {
         onPress={() => onRate(selected ? 0 : value)}
         style={[
           styles.thumb,
-          { backgroundColor: selected ? theme.text : theme.backgroundSelected },
+          brutal({ radius: 12, shadow: 3, border: 2.5 }),
+          { backgroundColor: selected ? colour : Palette.white },
           disabled && styles.dimmed,
         ]}>
         <ThemedText style={styles.emoji}>{emoji}</ThemedText>
@@ -40,9 +38,9 @@ export function Thumbs({ myRating, score, onRate, disabled }: ThumbsProps) {
       <ThemedText type="small" themeColor="textSecondary" style={styles.label}>
         Played it?
       </ThemedText>
-      {thumb(1, '👍', 'Thumbs up')}
-      {thumb(-1, '👎', 'Thumbs down')}
-      <ThemedText type="small" themeColor="textSecondary" accessibilityLabel={`Score ${score}`}>
+      {thumb(1, '👍', 'Thumbs up', Palette.green)}
+      {thumb(-1, '👎', 'Thumbs down', Palette.red)}
+      <ThemedText style={styles.score} accessibilityLabel={`Score ${score}`}>
         {score > 0 ? `+${score}` : score}
       </ThemedText>
     </View>
@@ -53,20 +51,25 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
+    gap: Spacing.two + 2,
   },
   label: {
     flex: 1,
   },
   thumb: {
-    width: 48,
-    height: 44,
-    borderRadius: 22,
+    width: 52,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emoji: {
     fontSize: 20,
+    lineHeight: 26,
+  },
+  score: {
+    fontFamily: Fonts.bodyBold,
+    fontSize: 14,
+    minWidth: 20,
   },
   dimmed: {
     opacity: 0.5,

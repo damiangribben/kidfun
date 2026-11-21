@@ -5,7 +5,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { FormError } from '@/components/form-screen';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { headerTitle, stackHeader } from '@/constants/navigation';
+import { brutal, MaxContentWidth, Palette, Spacing } from '@/constants/theme';
 import { errorMessage } from '@/lib/family';
 import { Thumbs } from '@/components/thumbs';
 import { getIdea, rateIdea, type Idea, type Rating } from '@/lib/ideas';
@@ -46,7 +47,7 @@ export default function IdeaScreen() {
 
   return (
     <ThemedView style={styles.fill}>
-      <Stack.Screen options={{ headerShown: true, title: 'Play idea', headerShadowVisible: false }} />
+      <Stack.Screen options={{ ...stackHeader, headerShown: true, title: headerTitle('Play idea') }} />
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
         {!idea && !error && <ThemedText themeColor="textSecondary">Loading…</ThemedText>}
         {idea && (
@@ -59,12 +60,12 @@ export default function IdeaScreen() {
             <Thumbs myRating={idea.myRating} score={idea.score} onRate={rate} disabled={busy} />
 
             {idea.supervise_closely && (
-              <ThemedView type="backgroundSelected" style={styles.banner}>
+              <View style={[styles.banner, brutal({ radius: 14 })]}>
                 <ThemedText type="smallBold">Supervise closely</ThemedText>
                 <ThemedText type="small">
                   Some of these toys have small parts and a child under 3 is playing.
                 </ThemedText>
-              </ThemedView>
+              </View>
             )}
 
             <Section title="You'll need">
@@ -129,6 +130,6 @@ const styles = StyleSheet.create({
   banner: {
     gap: Spacing.one,
     padding: Spacing.three,
-    borderRadius: Spacing.three,
+    backgroundColor: Palette.yellow,
   },
 });

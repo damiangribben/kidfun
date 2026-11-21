@@ -1,8 +1,8 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { Chip } from '@/components/ui/chip';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 
 type ChipOption = { value: string; label: string };
 
@@ -15,8 +15,6 @@ type MultiChipGroupProps = {
 
 /** Multiple-choice chips (tag-style) that wrap onto new lines. */
 export function MultiChipGroup({ label, options, values, onChange }: MultiChipGroupProps) {
-  const theme = useTheme();
-
   function toggle(value: string) {
     onChange(values.includes(value) ? values.filter((v) => v !== value) : [...values, value]);
   }
@@ -28,19 +26,14 @@ export function MultiChipGroup({ label, options, values, onChange }: MultiChipGr
         {options.map((option) => {
           const selected = values.includes(option.value);
           return (
-            <Pressable
+            <Chip
               key={option.value}
+              label={selected ? `✓ ${option.label}` : option.label}
+              selected={selected}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: selected }}
               onPress={() => toggle(option.value)}
-              style={[
-                styles.chip,
-                { backgroundColor: selected ? theme.text : theme.backgroundElement },
-              ]}>
-              <ThemedText type="small" style={{ color: selected ? theme.background : theme.text }}>
-                {selected ? `✓ ${option.label}` : option.label}
-              </ThemedText>
-            </Pressable>
+            />
           );
         })}
       </View>
@@ -55,12 +48,6 @@ const styles = StyleSheet.create({
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  chip: {
-    minHeight: 36,
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.three,
-    borderRadius: 18,
+    gap: Spacing.two + 2,
   },
 });

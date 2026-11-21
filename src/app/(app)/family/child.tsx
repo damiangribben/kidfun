@@ -4,6 +4,7 @@ import { Alert, StyleSheet } from 'react-native';
 
 import { FormError } from '@/components/form-screen';
 import { ScrollScreen } from '@/components/scroll-screen';
+import { headerTitle } from '@/constants/navigation';
 import { Button } from '@/components/ui/button';
 import { DateField } from '@/components/ui/date-field';
 import { TextField } from '@/components/ui/text-field';
@@ -80,7 +81,7 @@ export default function ChildScreen() {
 
   return (
     <ScrollScreen loading={loading}>
-      <Stack.Screen options={{ title: id ? 'Edit child' : 'Add child' }} />
+      <Stack.Screen options={{ title: headerTitle(id ? 'Edit child' : 'Add child') }} />
       <TextField
         label="Name"
         value={name}

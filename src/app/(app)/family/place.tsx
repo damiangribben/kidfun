@@ -5,6 +5,7 @@ import { Alert } from 'react-native';
 import { FormError } from '@/components/form-screen';
 import { ScrollScreen } from '@/components/scroll-screen';
 import { ThemedText } from '@/components/themed-text';
+import { headerTitle } from '@/constants/navigation';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
 import { deletePlace, errorMessage, getPlace, savePlace } from '@/lib/family';
@@ -63,7 +64,7 @@ export default function PlaceScreen() {
 
   return (
     <ScrollScreen loading={loading}>
-      <Stack.Screen options={{ title: id ? 'Edit place' : 'Add place' }} />
+      <Stack.Screen options={{ title: headerTitle(id ? 'Edit place' : 'Add place') }} />
       <TextField
         label="Name"
         value={name}

@@ -6,8 +6,8 @@ import { FormError, FormScreen } from '@/components/form-screen';
 import { GuestChildren } from '@/components/guest-children';
 import { PhotoCollector } from '@/components/photo-collector';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { ChipGroup } from '@/components/ui/chip-group';
 import { MultiChipGroup } from '@/components/ui/multi-chip-group';
 import { TextField } from '@/components/ui/text-field';
@@ -257,7 +257,7 @@ export default function PlayScreen() {
               </View>
 
               {snapping && (
-                <ThemedView type="backgroundElement" style={styles.card}>
+                <Card style={styles.card}>
                   <ThemedText>
                     Photograph the toys you have with you, then Claude will select them.
                   </ThemedText>
@@ -268,11 +268,11 @@ export default function PlayScreen() {
                     onSubmit={matchPhotos}
                     onCancel={() => setSnapping(false)}
                   />
-                </ThemedView>
+                </Card>
               )}
 
               {spotted && (
-                <ThemedView type="backgroundElement" style={styles.card}>
+                <Card style={styles.card}>
                   <ThemedText>
                     {spotted.matched === 0
                       ? 'None of those are in your toys yet.'
@@ -292,7 +292,7 @@ export default function PlayScreen() {
                     </>
                   )}
                   <Button title="Dismiss" variant="secondary" onPress={() => setSpotted(null)} />
-                </ThemedView>
+                </Card>
               )}
 
               {data.places.length > 1 && (
@@ -377,7 +377,5 @@ const styles = StyleSheet.create({
   },
   card: {
     gap: Spacing.two,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
   },
 });

@@ -2,7 +2,7 @@ import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/d
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { brutal, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDate } from '@/lib/dates';
 
@@ -46,7 +46,7 @@ export function DateField({ label, value, onChange, initialDate, maximumDate }: 
           accessibilityRole="button"
           accessibilityLabel={`${label}: ${value ? formatDate(value) : 'not set'}`}
           onPress={Platform.OS === 'ios' ? () => onChange(initialDate) : openAndroidPicker}
-          style={[styles.input, { backgroundColor: theme.backgroundElement }]}>
+          style={[styles.input, brutal({ radius: 10, shadow: 3 }), { backgroundColor: theme.backgroundElement }]}>
           <ThemedText themeColor={value ? 'text' : 'textSecondary'}>
             {value ? formatDate(value) : 'Choose a date'}
           </ThemedText>
@@ -61,8 +61,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   input: {
-    minHeight: 48,
-    borderRadius: Spacing.three,
+    minHeight: 52,
     paddingHorizontal: Spacing.three,
     justifyContent: 'center',
   },

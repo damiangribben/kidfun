@@ -1,8 +1,8 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { Chip } from '@/components/ui/chip';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 
 type ChipOption<T extends string> = { value: T; label: string };
 
@@ -15,8 +15,6 @@ type ChipGroupProps<T extends string> = {
 
 /** Single-choice chips that wrap onto new lines. */
 export function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGroupProps<T>) {
-  const theme = useTheme();
-
   return (
     <View style={styles.wrapper}>
       {label && <ThemedText type="smallBold">{label}</ThemedText>}
@@ -24,19 +22,14 @@ export function ChipGroup<T extends string>({ label, options, value, onChange }:
         {options.map((option) => {
           const selected = option.value === value;
           return (
-            <Pressable
+            <Chip
               key={option.value}
+              label={option.label}
+              selected={selected}
               accessibilityRole="radio"
               accessibilityState={{ checked: selected }}
               onPress={() => onChange(option.value)}
-              style={[
-                styles.chip,
-                { backgroundColor: selected ? theme.text : theme.backgroundElement },
-              ]}>
-              <ThemedText type="small" style={{ color: selected ? theme.background : theme.text }}>
-                {option.label}
-              </ThemedText>
-            </Pressable>
+            />
           );
         })}
       </View>
@@ -51,12 +44,6 @@ const styles = StyleSheet.create({
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  chip: {
-    minHeight: 36,
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.three,
-    borderRadius: 18,
+    gap: Spacing.two + 2,
   },
 });

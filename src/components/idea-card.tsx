@@ -1,10 +1,10 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Thumbs } from '@/components/thumbs';
 import { Button } from '@/components/ui/button';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { Card } from '@/components/ui/card';
 import type { Idea, Rating } from '@/lib/ideas';
 
 type IdeaCardProps = {
@@ -18,16 +18,15 @@ type IdeaCardProps = {
 
 /** A compact idea with its pitch and toys, thumbs, and a button to open it. */
 export function IdeaCard({ idea, onOpen, onRate, busy, missingToys }: IdeaCardProps) {
-  const theme = useTheme();
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+    <Card style={styles.card}>
       <Pressable
         accessibilityRole="button"
         accessibilityHint="Opens the full idea"
         onPress={onOpen}
         style={({ pressed }) => [styles.body, pressed && styles.pressed]}>
-        <ThemedText type="smallBold" style={styles.name}>
+        <ThemedText type="cardTitle">
           {idea.name}
         </ThemedText>
         <ThemedText>{idea.pitch}</ThemedText>
@@ -47,22 +46,16 @@ export function IdeaCard({ idea, onOpen, onRate, busy, missingToys }: IdeaCardPr
       </Pressable>
       <Thumbs myRating={idea.myRating} score={idea.score} onRate={onRate} disabled={busy} />
       <Button title="View the full idea" onPress={onOpen} />
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
   },
   body: {
     gap: Spacing.two,
-  },
-  name: {
-    fontSize: 18,
-    lineHeight: 24,
   },
   pressed: {
     opacity: 0.7,

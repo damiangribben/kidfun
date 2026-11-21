@@ -1,55 +1,57 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://unistyl.es/), etc.
+ * Kidfun's look: bright primaries on light yellow, black outlines and hard
+ * offset shadows (neo-brutalist), Fredoka for headings and labels, Lexend for
+ * body text. Light only, so both schemes share the same colours.
  */
 
 import '@/global.css';
 
-import { Platform } from 'react-native';
+import { Platform, type ViewStyle } from 'react-native';
 
-export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
+export const Palette = {
+  ink: '#111111',
+  blue: '#1F6BFF',
+  red: '#FF3B30',
+  yellow: '#FFC61A',
+  green: '#22B35E',
+  white: '#FFFFFF',
 } as const;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+const light = {
+  text: '#1F2A44',
+  background: '#FFF4CC',
+  backgroundElement: '#FFFFFF',
+  backgroundSelected: '#FFF9E5',
+  textSecondary: '#5B6478',
+  ink: Palette.ink,
+} as const;
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+export const Colors = { light, dark: light } as const;
+
+export type ThemeColor = keyof typeof light;
+
+/** Font family names as loaded by useFonts in the root layout. */
+export const Fonts = {
+  display: 'Fredoka_600SemiBold',
+  body: 'Lexend_400Regular',
+  bodyMedium: 'Lexend_500Medium',
+  bodyBold: 'Lexend_600SemiBold',
+  mono: Platform.select({ ios: 'ui-monospace', default: 'monospace' }),
+} as const;
+
+/** Black outline, hard offset shadow and blocky corners. */
+export function brutal({
+  radius = 12,
+  shadow = 4,
+  border = 3,
+}: { radius?: number; shadow?: number; border?: number } = {}): ViewStyle {
+  return {
+    borderWidth: border,
+    borderColor: Palette.ink,
+    borderRadius: radius,
+    boxShadow: [{ offsetX: shadow, offsetY: shadow, blurRadius: 0, color: Palette.ink }],
+  };
+}
 
 export const Spacing = {
   half: 2,
