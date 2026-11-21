@@ -1,6 +1,6 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { FormError } from '@/components/form-screen';
 import { ThemedText } from '@/components/themed-text';
@@ -9,7 +9,8 @@ import { headerTitle, stackHeader } from '@/constants/navigation';
 import { brutal, MaxContentWidth, Palette, Spacing } from '@/constants/theme';
 import { errorMessage } from '@/lib/family';
 import { Thumbs } from '@/components/thumbs';
-import { getIdea, rateIdea, type Idea, type Rating } from '@/lib/ideas';
+import { Button } from '@/components/ui/button';
+import { deleteIdea, getIdea, rateIdea, type Idea, type Rating } from '@/lib/ideas';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -43,6 +44,28 @@ export default function IdeaScreen() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function confirmDelete() {
+    if (!idea) return;
+    Alert.alert(`Delete "${idea.name}"?`, 'It will be removed from your library for everyone in the household.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            await deleteIdea(idea.id);
+            router.back();
+          } catch (e) {
+            setError(errorMessage(e));
+            setBusy(false);
+          }
+        },
+      },
+    ]);
   }
 
   return (
@@ -103,6 +126,9 @@ export default function IdeaScreen() {
           </>
         )}
         <FormError message={error} />
+        {idea && (
+          <Button title="Delete idea" variant="danger" onPress={confirmDelete} disabled={busy} />
+        )}
       </ScrollView>
     </ThemedView>
   );

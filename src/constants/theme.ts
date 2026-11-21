@@ -11,7 +11,9 @@ import { Platform, type ViewStyle } from 'react-native';
 export const Palette = {
   ink: '#111111',
   blue: '#1F6BFF',
+  /** Only for destructive or negative actions (delete, thumbs down, errors), never for "selected". */
   red: '#FF3B30',
+  /** The "selected" colour: chips and the selected tab. */
   yellow: '#FFC61A',
   green: '#22B35E',
   white: '#FFFFFF',

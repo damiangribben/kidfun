@@ -10,18 +10,18 @@ type ChipProps = Omit<PressableProps, 'style' | 'children'> & {
 
 const SHADOW = 3;
 
-/** One outlined chip: red when selected, white otherwise. Shared by the chip groups. */
+/** One outlined chip: yellow when selected, white otherwise. Shared by the chip groups. */
 export function Chip({ label, selected, ...rest }: ChipProps) {
   return (
     <Pressable
       style={({ pressed }) => [
         styles.chip,
         brutal({ radius: 10, shadow: SHADOW, border: 2.5 }),
-        { backgroundColor: selected ? Palette.red : Palette.white },
+        { backgroundColor: selected ? Palette.yellow : Palette.white },
         pressed && styles.pressed,
       ]}
       {...rest}>
-      <ThemedText style={[styles.label, { color: selected ? Palette.white : Palette.ink }]}>
+      <ThemedText style={[styles.label, { color: Palette.ink }]}>
         {label}
       </ThemedText>
     </Pressable>

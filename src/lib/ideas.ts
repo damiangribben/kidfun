@@ -162,3 +162,12 @@ export async function rateIdea(idea: Idea, rating: Rating): Promise<Idea> {
   if (error) throw new FriendlyError(error.message);
   return { ...idea, myRating: rating, score: idea.score - idea.myRating + rating };
 }
+
+/**
+ * Deletes an idea from the household's library. Its thumbs and its toy and
+ * player tags go with it (the database cascades the delete).
+ */
+export async function deleteIdea(id: string): Promise<void> {
+  const { error } = await supabase.from('ideas').delete().eq('id', id);
+  if (error) throw new FriendlyError(error.message);
+}

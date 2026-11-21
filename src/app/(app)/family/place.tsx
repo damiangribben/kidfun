@@ -80,7 +80,7 @@ export default function PlaceScreen() {
       )}
       <FormError message={error} />
       <Button title="Save" onPress={save} busy={busy} disabled={name.trim().length === 0} />
-      {id && <Button title="Delete place" variant="secondary" onPress={confirmDelete} disabled={busy} />}
+      {id && <Button title="Delete place" variant="danger" onPress={confirmDelete} disabled={busy} />}
     </ScrollScreen>
   );
 }

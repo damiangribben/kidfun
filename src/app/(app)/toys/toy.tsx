@@ -102,7 +102,7 @@ export default function ToyScreen() {
       />
       <FormError message={error} />
       <Button title="Save" onPress={save} busy={busy} disabled={name.trim().length === 0} />
-      <Button title="Remove toy" variant="secondary" onPress={confirmDelete} disabled={busy} />
+      <Button title="Remove toy" variant="danger" onPress={confirmDelete} disabled={busy} />
     </ScrollScreen>
   );
 }

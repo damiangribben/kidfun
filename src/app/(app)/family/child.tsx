@@ -121,7 +121,7 @@ export default function ChildScreen() {
         busy={busy}
         disabled={name.trim().length === 0 || !birthDate}
       />
-      {id && <Button title="Remove child" variant="secondary" onPress={confirmDelete} disabled={busy} />}
+      {id && <Button title="Remove child" variant="danger" onPress={confirmDelete} disabled={busy} />}
     </ScrollScreen>
   );
 }
