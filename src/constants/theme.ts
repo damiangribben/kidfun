@@ -19,7 +19,7 @@ export const Palette = {
 
 const light = {
   text: '#1F2A44',
-  background: '#FFF4CC',
+  background: '#FFFFE6',
   backgroundElement: '#FFFFFF',
   backgroundSelected: '#FFF9E5',
   textSecondary: '#5B6478',

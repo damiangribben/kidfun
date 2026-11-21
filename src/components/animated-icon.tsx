@@ -6,7 +6,7 @@ import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
 // Matches the native splash background in app.json.
-const SPLASH_BACKGROUND = '#FFC845';
+const SPLASH_BACKGROUND = '#FFFFE6';
 const DURATION = 600;
 
 /**
