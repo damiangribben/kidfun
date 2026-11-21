@@ -58,7 +58,7 @@ export default function ToyScreen() {
   }
 
   function confirmDelete() {
-    Alert.alert(`Remove ${name}?`, 'It will also be untagged from any saved ideas.', [
+    Alert.alert(`Remove ${name}?`, 'It will also be untagged from any ideas in your library.', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Remove',

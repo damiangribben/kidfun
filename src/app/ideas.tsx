@@ -13,7 +13,6 @@ import {
   generateIdeas,
   getIdeas,
   rateIdea,
-  setIdeaSaved,
   type Idea,
   type IdeaRequest,
   type Rating,
@@ -24,7 +23,7 @@ function splitIds(value: string | undefined) {
 }
 
 /**
- * Ideas for one request: matching saved ideas from the library first,
+ * Ideas for one request: matching ideas from the library first,
  * then any new ones from Claude, with "Something new" always available.
  */
 export default function IdeasScreen() {
@@ -63,11 +62,6 @@ export default function IdeasScreen() {
     }
   }
 
-  const toggleSave = (idea: Idea) =>
-    update(idea, async () => {
-      await setIdeaSaved(idea.id, !idea.saved);
-      return { ...idea, saved: !idea.saved };
-    });
   const rate = (idea: Idea, rating: Rating) => update(idea, () => rateIdea(idea, rating));
 
   async function somethingNew() {
@@ -94,7 +88,6 @@ export default function IdeasScreen() {
         key={id}
         idea={idea}
         onOpen={() => router.push({ pathname: '/idea', params: { id } })}
-        onToggleSave={() => toggleSave(idea)}
         onRate={(rating) => rate(idea, rating)}
         busy={busyId === id}
         missingToys={missing}
@@ -112,7 +105,7 @@ export default function IdeasScreen() {
           <View style={styles.section}>
             <ThemedText type="smallBold">From your library</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Saved ideas that use these toys, best rated first.
+              Ideas you&apos;ve had before with these toys, best rated first.
             </ThemedText>
             {libraryIds.map(card)}
           </View>
@@ -122,7 +115,7 @@ export default function IdeasScreen() {
           <View style={styles.section}>
             <ThemedText type="smallBold">New ideas</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Save the ones you like so they come back next time.
+              Added to your library. Rate them after you play so the best ones come up first.
             </ThemedText>
             {newIds.map(card)}
           </View>

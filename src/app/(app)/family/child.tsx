@@ -59,7 +59,7 @@ export default function ChildScreen() {
 
   function confirmDelete() {
     if (!id) return;
-    Alert.alert(`Remove ${name}?`, 'Saved ideas stay in the library.', [
+    Alert.alert(`Remove ${name}?`, 'Ideas stay in the library.', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Remove',

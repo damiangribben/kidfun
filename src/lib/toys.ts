@@ -74,23 +74,28 @@ export async function parseToyList(text: string): Promise<DetectedToy[]> {
   return toys;
 }
 
-/** Sends a JPEG photo to Claude and returns the toys it can see. */
-export async function detectToysInPhoto(base64Jpeg: string): Promise<DetectedToy[]> {
+function photoPayload(base64Jpegs: string[]) {
+  return base64Jpegs.map((data) => ({ data, mediaType: 'image/jpeg' }));
+}
+
+/** Sends JPEG photos to Claude and returns the toys it can see across all of them. */
+export async function detectToysInPhotos(base64Jpegs: string[]): Promise<DetectedToy[]> {
   const { toys } = await invoke<{ toys: DetectedToy[] }>('photo-toys', {
-    image: base64Jpeg,
-    mediaType: 'image/jpeg',
+    images: photoPayload(base64Jpegs),
   });
   return toys;
 }
 
 export type SpottedToy = DetectedToy & { existing_toy_id: string | null };
 
-/** Like detectToysInPhoto, but also matches each toy against the toys kept at a place. */
-export async function spotToysAtPlace(base64Jpeg: string, placeId: string): Promise<SpottedToy[]> {
+/**
+ * Like detectToysInPhotos, but also matches each toy against the inventory:
+ * the toys kept at one place, or every toy when placeId is null.
+ */
+export async function spotToys(base64Jpegs: string[], placeId: string | null): Promise<SpottedToy[]> {
   const { toys } = await invoke<{ toys: SpottedToy[] }>('photo-toys', {
-    image: base64Jpeg,
-    mediaType: 'image/jpeg',
-    placeId,
+    images: photoPayload(base64Jpegs),
+    ...(placeId ? { placeId } : { matchAllToys: true }),
   });
   return toys;
 }

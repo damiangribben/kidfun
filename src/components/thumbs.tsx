@@ -12,7 +12,7 @@ type ThumbsProps = {
   disabled?: boolean;
 };
 
-/** Thumbs up/down for a saved idea. Tapping your current choice again clears it. */
+/** Thumbs up/down for an idea. Tapping your current choice again clears it. */
 export function Thumbs({ myRating, score, onRate, disabled }: ThumbsProps) {
   const theme = useTheme();
 

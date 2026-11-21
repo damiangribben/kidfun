@@ -5,11 +5,10 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { FormError } from '@/components/form-screen';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Button } from '@/components/ui/button';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { errorMessage } from '@/lib/family';
 import { Thumbs } from '@/components/thumbs';
-import { getIdea, rateIdea, setIdeaSaved, type Idea, type Rating } from '@/lib/ideas';
+import { getIdea, rateIdea, type Idea, type Rating } from '@/lib/ideas';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -23,7 +22,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function IdeaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [idea, setIdea] = useState<Idea | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,30 +31,16 @@ export default function IdeaScreen() {
       .catch((e) => setError(errorMessage(e)));
   }, [id]);
 
-  async function toggleSave() {
-    if (!idea) return;
-    setSaving(true);
-    setError(null);
-    try {
-      await setIdeaSaved(idea.id, !idea.saved);
-      setIdea({ ...idea, saved: !idea.saved });
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function rate(rating: Rating) {
     if (!idea) return;
-    setSaving(true);
+    setBusy(true);
     setError(null);
     try {
       setIdea(await rateIdea(idea, rating));
     } catch (e) {
       setError(errorMessage(e));
     } finally {
-      setSaving(false);
+      setBusy(false);
     }
   }
 
@@ -71,15 +56,7 @@ export default function IdeaScreen() {
               <ThemedText style={styles.pitch}>“{idea.pitch}”</ThemedText>
             </View>
 
-            <Button
-              title={idea.saved ? 'Saved ✓' : 'Save idea'}
-              variant={idea.saved ? 'secondary' : 'primary'}
-              onPress={toggleSave}
-              busy={saving}
-            />
-            {idea.saved && (
-              <Thumbs myRating={idea.myRating} score={idea.score} onRate={rate} disabled={saving} />
-            )}
+            <Thumbs myRating={idea.myRating} score={idea.score} onRate={rate} disabled={busy} />
 
             {idea.supervise_closely && (
               <ThemedView type="backgroundSelected" style={styles.banner}>

@@ -395,6 +395,20 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      match_ideas: {
+        Args: {
+          chosen_child_ids: string[]
+          chosen_setting: string
+          chosen_toy_ids: string[]
+        }
+        Returns: {
+          all_toys_chosen: boolean
+          idea_id: string
+          same_players: boolean
+          score: number
+          shared_toys: number
+        }[]
+      }
       match_saved_ideas: {
         Args: { chosen_child_ids: string[]; chosen_toy_ids: string[] }
         Returns: {

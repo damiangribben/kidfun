@@ -10,6 +10,8 @@ export type IdeaContent = {
   child_roles: { child_id: string; name: string; role: string }[];
   parent_role: string;
   situation: string | null;
+  /** Where it was meant to be played; missing on ideas made before settings existed. */
+  setting?: Setting;
   /** Every toy the parent offered when this idea was made. */
   offered_toy_ids?: string[];
 };
@@ -20,7 +22,6 @@ export type Idea = {
   pitch: string;
   content: IdeaContent;
   supervise_closely: boolean;
-  saved: boolean;
   childIds: string[];
   parentIds: string[];
   /** Both parents' thumbs added up. */
@@ -31,16 +32,37 @@ export type Idea = {
 
 export type Rating = 1 | -1 | 0;
 
+// Where the family is playing. Must match SETTINGS in the generate-idea function.
+export const SETTINGS = [
+  { value: 'indoors', label: 'Indoors' },
+  { value: 'garden', label: 'Garden' },
+  { value: 'park', label: 'Park' },
+] as const;
+
+export type Setting = (typeof SETTINGS)[number]['value'];
+
+/** A friend playing today only; never saved. */
+export type GuestChild = {
+  gender: 'boy' | 'girl' | 'unspecified';
+  age: number;
+};
+
+export function guestLabel(guest: GuestChild): string {
+  return guest.gender === 'unspecified' ? `Friend (${guest.age})` : `Friend (${guest.gender}, ${guest.age})`;
+}
+
 export type IdeaRequest = {
+  setting: Setting;
   childIds: string[];
   parentIds: string[];
+  guests?: GuestChild[];
   toyIds: string[];
   situation?: string;
   count?: number;
 };
 
 const IDEA_COLUMNS =
-  'id, name, pitch, content, supervise_closely, saved_at, idea_players(child_id, user_id), idea_ratings(user_id, value)';
+  'id, name, pitch, content, supervise_closely, idea_players(child_id, user_id), idea_ratings(user_id, value)';
 
 type IdeaRow = {
   id: string;
@@ -48,7 +70,6 @@ type IdeaRow = {
   pitch: string;
   content: Json;
   supervise_closely: boolean;
-  saved_at: string | null;
   idea_players: { child_id: string | null; user_id: string | null }[];
   idea_ratings: { user_id: string; value: number }[];
 };
@@ -67,29 +88,18 @@ function toIdea(row: IdeaRow, userId: string | undefined): Idea {
     pitch: row.pitch,
     content: row.content as unknown as IdeaContent,
     supervise_closely: row.supervise_closely,
-    saved: row.saved_at !== null,
     childIds: row.idea_players.flatMap((p) => (p.child_id ? [p.child_id] : [])),
     parentIds: row.idea_players.flatMap((p) => (p.user_id ? [p.user_id] : [])),
   };
 }
 
-/** Asks Claude for a few new ideas and returns their ids (they start unsaved). */
+/** Asks Claude for a few new ideas (added straight to the library) and returns their ids. */
 export async function generateIdeas(request: IdeaRequest): Promise<string[]> {
   const { ideas } = await invokeFunction<{ ideas: { id: string }[] }>('generate-idea', {
     count: 3,
     ...request,
   });
   return ideas.map((i) => i.id);
-}
-
-/** The same request again, offering every toy the parent offered the first time. */
-export function requestFrom(idea: Idea): IdeaRequest {
-  return {
-    childIds: idea.childIds,
-    parentIds: idea.parentIds,
-    toyIds: idea.content.offered_toy_ids ?? idea.content.toys.map((t) => t.toy_id),
-    situation: idea.content.situation ?? undefined,
-  };
 }
 
 export async function getIdea(id: string): Promise<Idea> {
@@ -113,25 +123,27 @@ export async function getIdeas(ids: string[]): Promise<Idea[]> {
   return ids.flatMap((id) => byId.get(id) ?? []);
 }
 
-/** Every saved idea, best rated first, then most recently saved. */
-export async function listSavedIdeas(): Promise<Idea[]> {
+/** The whole library: best rated first, then newest. */
+export async function listIdeas(): Promise<Idea[]> {
   const [{ data, error }, userId] = await Promise.all([
-    supabase
-      .from('ideas')
-      .select(IDEA_COLUMNS)
-      .not('saved_at', 'is', null)
-      .order('saved_at', { ascending: false }),
+    supabase.from('ideas').select(IDEA_COLUMNS).order('created_at', { ascending: false }),
     myUserId(),
   ]);
   if (error) throw new FriendlyError(error.message);
+  // Array.prototype.sort is stable, so equal scores stay newest first.
   return data.map((row) => toIdea(row, userId)).sort((a, b) => b.score - a.score);
 }
 
-/** Saved ideas using any of these toys, ranked by the database (see match_saved_ideas). */
-export async function matchSavedIdeas(toyIds: string[], childIds: string[]): Promise<string[]> {
-  const { data, error } = await supabase.rpc('match_saved_ideas', {
+/** Library ideas for this setting using any of these toys, ranked by the database (see match_ideas). */
+export async function matchIdeas(
+  toyIds: string[],
+  childIds: string[],
+  setting: Setting,
+): Promise<string[]> {
+  const { data, error } = await supabase.rpc('match_ideas', {
     chosen_toy_ids: toyIds,
     chosen_child_ids: childIds,
+    chosen_setting: setting,
   });
   if (error) throw new FriendlyError(error.message);
   return data.map((m) => m.idea_id);
@@ -149,12 +161,4 @@ export async function rateIdea(idea: Idea, rating: Rating): Promise<Idea> {
           .upsert({ idea_id: idea.id, user_id: userId, value: rating }, { onConflict: 'idea_id,user_id' });
   if (error) throw new FriendlyError(error.message);
   return { ...idea, myRating: rating, score: idea.score - idea.myRating + rating };
-}
-
-export async function setIdeaSaved(id: string, saved: boolean): Promise<void> {
-  const { error } = await supabase
-    .from('ideas')
-    .update({ saved_at: saved ? new Date().toISOString() : null })
-    .eq('id', id);
-  if (error) throw new FriendlyError(error.message);
 }

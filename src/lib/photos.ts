@@ -7,6 +7,9 @@ import { FriendlyError } from '@/lib/family';
 // and smaller photos upload faster.
 const MAX_EDGE = 1568;
 
+/** Photos sent to Claude in one go (matches the photo-toys Edge Function). */
+export const MAX_PHOTOS = 6;
+
 export type PreparedPhoto = {
   /** Local file for showing the photo in the app. */
   uri: string;
@@ -14,11 +17,26 @@ export type PreparedPhoto = {
   base64: string;
 };
 
+async function prepare(asset: ImagePicker.ImagePickerAsset): Promise<PreparedPhoto> {
+  const context = ImageManipulator.manipulate(asset.uri);
+  if (Math.max(asset.width, asset.height) > MAX_EDGE) {
+    context.resize(asset.width >= asset.height ? { width: MAX_EDGE } : { height: MAX_EDGE });
+  }
+  const image = await context.renderAsync();
+  const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.8, base64: true });
+  if (!saved.base64) throw new FriendlyError('Couldn’t read one of those photos. Please try another.');
+  return { uri: saved.uri, base64: saved.base64 };
+}
+
 /**
- * Lets the parent take or choose a photo, then shrinks it to a JPEG ready to send.
- * Returns null if they cancel.
+ * Takes one photo with the camera, or lets the parent choose up to `limit`
+ * from their gallery, then shrinks each to a JPEG ready to send.
+ * Returns an empty list if they cancel.
  */
-export async function pickPhoto(source: 'camera' | 'library'): Promise<PreparedPhoto | null> {
+export async function pickPhotos(
+  source: 'camera' | 'library',
+  limit: number,
+): Promise<PreparedPhoto[]> {
   if (source === 'camera') {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
@@ -26,21 +44,20 @@ export async function pickPhoto(source: 'camera' | 'library'): Promise<PreparedP
     }
   }
 
-  const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 1 };
   const result =
     source === 'camera'
-      ? await ImagePicker.launchCameraAsync(options)
-      : await ImagePicker.launchImageLibraryAsync(options);
-  if (result.canceled) return null;
+      ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 1 })
+      : await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          quality: 1,
+          allowsMultipleSelection: limit > 1,
+          selectionLimit: limit,
+        });
+  if (result.canceled) return [];
 
-  const asset = result.assets[0];
-  const context = ImageManipulator.manipulate(asset.uri);
-  if (Math.max(asset.width, asset.height) > MAX_EDGE) {
-    context.resize(asset.width >= asset.height ? { width: MAX_EDGE } : { height: MAX_EDGE });
+  const prepared: PreparedPhoto[] = [];
+  for (const asset of result.assets.slice(0, limit)) {
+    prepared.push(await prepare(asset));
   }
-  const image = await context.renderAsync();
-  const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.8, base64: true });
-  if (!saved.base64) throw new FriendlyError('Couldn’t read that photo. Please try another.');
-
-  return { uri: saved.uri, base64: saved.base64 };
+  return prepared;
 }

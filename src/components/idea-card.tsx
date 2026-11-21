@@ -10,15 +10,14 @@ import type { Idea, Rating } from '@/lib/ideas';
 type IdeaCardProps = {
   idea: Idea;
   onOpen: () => void;
-  onToggleSave: () => void;
   onRate: (rating: Rating) => void;
   busy?: boolean;
   /** Toys the idea needs that weren't picked this time. */
   missingToys?: string[];
 };
 
-/** A compact idea with its pitch and toys, open/save buttons and, once saved, thumbs. */
-export function IdeaCard({ idea, onOpen, onToggleSave, onRate, busy, missingToys }: IdeaCardProps) {
+/** A compact idea with its pitch and toys, thumbs, and a button to open it. */
+export function IdeaCard({ idea, onOpen, onRate, busy, missingToys }: IdeaCardProps) {
   const theme = useTheme();
 
   return (
@@ -46,16 +45,8 @@ export function IdeaCard({ idea, onOpen, onToggleSave, onRate, busy, missingToys
           </ThemedText>
         )}
       </Pressable>
-      {idea.saved && (
-        <Thumbs myRating={idea.myRating} score={idea.score} onRate={onRate} disabled={busy} />
-      )}
+      <Thumbs myRating={idea.myRating} score={idea.score} onRate={onRate} disabled={busy} />
       <Button title="View the full idea" onPress={onOpen} />
-      <Button
-        title={idea.saved ? 'Saved ✓' : 'Save idea'}
-        variant="secondary"
-        onPress={onToggleSave}
-        disabled={busy}
-      />
     </View>
   );
 }

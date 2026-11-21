@@ -1,9 +1,10 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { FormError } from '@/components/form-screen';
+import { PhotoCollector } from '@/components/photo-collector';
 import { ScrollScreen } from '@/components/scroll-screen';
 import { ThemedText } from '@/components/themed-text';
 import { ToyReview } from '@/components/toy-review';
@@ -11,23 +12,23 @@ import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { errorMessage, listPlaces, type Place } from '@/lib/family';
-import { pickPhoto } from '@/lib/photos';
+import type { PreparedPhoto } from '@/lib/photos';
 import {
-  detectToysInPhoto,
+  detectToysInPhotos,
   listToys,
   parseToyList,
   type DetectedToy,
   type Toy,
 } from '@/lib/toys';
 
-type Busy = 'list' | 'camera' | 'library' | null;
+type Busy = 'list' | 'photos' | null;
 
 export default function AddToysScreen() {
   const { placeId } = useLocalSearchParams<{ placeId?: string }>();
   const [places, setPlaces] = useState<Place[] | null>(null);
   const [existingToys, setExistingToys] = useState<Toy[]>([]);
   const [text, setText] = useState('');
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [detected, setDetected] = useState<DetectedToy[] | null>(null);
   const [busy, setBusy] = useState<Busy>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export default function AddToysScreen() {
     setBusy('list');
     setError(null);
     try {
-      setPhotoUri(null);
+      setPhotoUris([]);
       setDetected(await parseToyList(text));
     } catch (e) {
       setError(errorMessage(e));
@@ -54,14 +55,13 @@ export default function AddToysScreen() {
     }
   }
 
-  async function findToysInPhoto(source: 'camera' | 'library') {
-    setBusy(source);
+  async function findToysInPhotos(photos: PreparedPhoto[]) {
+    setBusy('photos');
     setError(null);
     try {
-      const photo = await pickPhoto(source);
-      if (!photo) return;
-      setPhotoUri(photo.uri);
-      setDetected(await detectToysInPhoto(photo.base64));
+      const found = await detectToysInPhotos(photos.map((p) => p.base64));
+      setPhotoUris(photos.map((p) => p.uri));
+      setDetected(found);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -77,13 +77,18 @@ export default function AddToysScreen() {
   if (detected && places && initialPlaceId) {
     return (
       <ScrollScreen>
-        {photoUri && (
-          <Image
-            source={{ uri: photoUri }}
-            style={styles.photo}
-            contentFit="cover"
-            accessibilityLabel="The photo you took"
-          />
+        {photoUris.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photos}>
+            {photoUris.map((uri, i) => (
+              <Image
+                key={uri}
+                source={{ uri }}
+                style={photoUris.length === 1 ? styles.singlePhoto : styles.photo}
+                contentFit="cover"
+                accessibilityLabel={`Photo ${i + 1}`}
+              />
+            ))}
+          </ScrollView>
         )}
         <ToyReview
           detected={detected}
@@ -97,27 +102,18 @@ export default function AddToysScreen() {
     );
   }
 
-  const ready = Boolean(initialPlaceId) && busy === null;
-
   return (
     <ScrollScreen loading={!error && places === null}>
       <View style={styles.section}>
-        <ThemedText type="smallBold">From a photo</ThemedText>
+        <ThemedText type="smallBold">From photos</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Snap a shelf, toy box or cupboard and Claude will pick out the toys.
+          Snap shelves, toy boxes or cupboards and Claude will pick out the toys.
         </ThemedText>
-        <Button
-          title={busy === 'camera' ? 'Looking for toys…' : 'Take a photo'}
-          onPress={() => findToysInPhoto('camera')}
-          busy={busy === 'camera'}
-          disabled={!ready}
-        />
-        <Button
-          title={busy === 'library' ? 'Looking for toys…' : 'Choose a photo'}
-          variant="secondary"
-          onPress={() => findToysInPhoto('library')}
-          busy={busy === 'library'}
-          disabled={!ready}
+        <PhotoCollector
+          submitLabel={(n) => (n === 1 ? 'Find toys in this photo' : `Find toys in ${n} photos`)}
+          busyLabel="Looking for toys…"
+          busy={busy === 'photos'}
+          onSubmit={findToysInPhotos}
         />
       </View>
 
@@ -140,7 +136,7 @@ export default function AddToysScreen() {
           variant="secondary"
           onPress={findToysInList}
           busy={busy === 'list'}
-          disabled={!ready || text.trim().length === 0}
+          disabled={!initialPlaceId || busy !== null || text.trim().length === 0}
         />
       </View>
 
@@ -161,9 +157,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlignVertical: 'top',
   },
+  photos: {
+    gap: Spacing.two,
+  },
   photo: {
-    width: '100%',
-    aspectRatio: 4 / 3,
+    width: 200,
+    height: 150,
+    borderRadius: Spacing.three,
+  },
+  singlePhoto: {
+    width: 320,
+    height: 240,
     borderRadius: Spacing.three,
   },
 });

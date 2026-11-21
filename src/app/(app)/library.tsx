@@ -7,14 +7,14 @@ import { ThemedText } from '@/components/themed-text';
 import { ListRow } from '@/components/ui/list-row';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { errorMessage } from '@/lib/family';
-import { listSavedIdeas, type Idea } from '@/lib/ideas';
+import { listIdeas, type Idea } from '@/lib/ideas';
 
 function subtitle(idea: Idea) {
   const score = idea.score > 0 ? `👍 +${idea.score}` : idea.score < 0 ? `👎 ${idea.score}` : null;
   return [score, idea.content.toys.map((t) => t.name).join(' · ')].filter(Boolean).join('  ·  ');
 }
 
-/** Every saved idea, best rated first. */
+/** Every idea you've had, best rated first. */
 export default function LibraryScreen() {
   const [ideas, setIdeas] = useState<Idea[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,7 @@ export default function LibraryScreen() {
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      listSavedIdeas()
+      listIdeas()
         .then((loaded) => {
           if (!active) return;
           setIdeas(loaded);
@@ -36,12 +36,12 @@ export default function LibraryScreen() {
   );
 
   return (
-    <FormScreen title="Library" intro="Your saved ideas, best rated first.">
+    <FormScreen title="Library" intro="Every idea you've had, best rated first.">
       <FormError message={error} />
       {!ideas && !error && <ThemedText themeColor="textSecondary">Loading…</ThemedText>}
       {ideas?.length === 0 && (
         <ThemedText themeColor="textSecondary">
-          Nothing saved yet. Get some ideas on the Play tab and save the ones you like.
+          No ideas yet. Get some on the Play tab and they&apos;ll appear here.
         </ThemedText>
       )}
       <View style={styles.list}>
