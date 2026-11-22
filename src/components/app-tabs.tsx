@@ -1,12 +1,20 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 
-/**
- * Native bottom tabs with Android's default look and behaviour: no custom
- * colours, fonts or ripple, so the bar follows the platform's Material styling.
- */
+import { Colors, Palette } from '@/constants/theme';
+
+// Android's native bottom bar with Kidfun's colours, as designed in Pen
+// (Tab bar states). Font and switching animation stay Android's defaults.
+const UNSELECTED = '#49454F';
+const SELECTED = '#1D192B';
+
 export default function AppTabs() {
   return (
-    <NativeTabs>
+    <NativeTabs
+      backgroundColor={Colors.light.background}
+      indicatorColor={Palette.yellow}
+      rippleColor={`${Palette.yellow}80`}
+      iconColor={{ default: UNSELECTED, selected: SELECTED }}
+      labelStyle={{ default: { color: UNSELECTED }, selected: { color: SELECTED } }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Play</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="lightbulb.fill" md="lightbulb" />
