@@ -104,13 +104,8 @@ export default function PlayScreen() {
     setToyIds([...new Set(ids)].slice(0, MAX_TOYS));
   }
 
-  function toggleShown() {
-    const shownIds = shownToys.map((t) => t.id);
-    selectToys(
-      allShownChosen
-        ? chosenToys.filter((id) => !shownIds.includes(id))
-        : [...chosenToys, ...shownIds],
-    );
+  function selectAllShown() {
+    selectToys([...chosenToys, ...shownToys.map((t) => t.id)]);
   }
 
   async function matchPhotos(photos: PreparedPhoto[]) {
@@ -270,24 +265,30 @@ export default function PlayScreen() {
                   <View style={styles.row}>
                     <View style={styles.flex}>
                       <Button
-                        title={allShownChosen ? 'Clear' : 'Select all'}
+                        title="Select all"
                         variant="secondary"
-                        onPress={toggleShown}
-                        disabled={busy !== null || shownToys.length === 0}
+                        onPress={selectAllShown}
+                        disabled={busy !== null || shownToys.length === 0 || allShownChosen}
                       />
                     </View>
                     <View style={styles.flex}>
                       <Button
-                        title="Snap what's out"
+                        title="Deselect all"
                         variant="secondary"
-                        onPress={() => {
-                          setSpotted(null);
-                          setSnapping(true);
-                        }}
-                        disabled={busy !== null || snapping}
+                        onPress={() => setToyIds([])}
+                        disabled={busy !== null || chosenToys.length === 0}
                       />
                     </View>
                   </View>
+                  <Button
+                    title="Snap what's out"
+                    variant="secondary"
+                    onPress={() => {
+                      setSpotted(null);
+                      setSnapping(true);
+                    }}
+                    disabled={busy !== null || snapping}
+                  />
 
                   {snapping && (
                     <Card style={styles.card}>

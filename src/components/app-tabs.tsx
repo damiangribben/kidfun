@@ -1,35 +1,29 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 
-import { Colors, Fonts, Palette } from '@/constants/theme';
-
-/** Native bottom tabs: white bar, yellow highlight on the selected tab, Fredoka labels. */
+/**
+ * Native bottom tabs with Android's default look and behaviour: no custom
+ * colours, fonts or ripple, so the bar follows the platform's Material styling.
+ */
 export default function AppTabs() {
   return (
-    <NativeTabs
-      backgroundColor={Palette.white}
-      indicatorColor={Palette.yellow}
-      iconColor={{ default: Colors.light.textSecondary, selected: Palette.ink }}
-      labelStyle={{
-        default: { color: Colors.light.textSecondary, fontFamily: Fonts.display, fontSize: 12 },
-        selected: { color: Palette.ink, fontFamily: Fonts.display, fontSize: 12 },
-      }}>
+    <NativeTabs>
       <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>PLAY</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Play</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="lightbulb.fill" md="lightbulb" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="library">
-        <NativeTabs.Trigger.Label>LIBRARY</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Library</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="bookmark.fill" md="bookmarks" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="toys">
-        <NativeTabs.Trigger.Label>TOYS</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Toys</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="teddybear.fill" md="toys" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="family">
-        <NativeTabs.Trigger.Label>FAMILY</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Family</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="person.2.fill" md="family_restroom" />
       </NativeTabs.Trigger>
     </NativeTabs>
