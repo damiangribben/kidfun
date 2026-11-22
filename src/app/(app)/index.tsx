@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ChipGroup } from '@/components/ui/chip-group';
 import { MultiChipGroup } from '@/components/ui/multi-chip-group';
+import { SegmentedTabs } from '@/components/ui/segmented-tabs';
 import { TextField } from '@/components/ui/text-field';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
@@ -59,8 +60,13 @@ export default function PlayScreen() {
   const [toyPlace, setToyPlace] = useState<string | null>(null);
   const [toyIds, setToyIds] = useState<string[]>([]);
   const [situation, setSituation] = useState('');
+  // "No toys" ignores any toy selection, so ideas need no toys at all.
+  const [noToys, setNoToys] = useState(false);
   const [snapping, setSnapping] = useState(false);
-  const [spotted, setSpotted] = useState<{ matched: number; newToys: SpottedToy[] } | null>(null);
+  const [spotted, setSpotted] = useState<{
+    matched: number;
+    newToys: SpottedToy[];
+  } | null>(null);
   const [busy, setBusy] = useState<Busy>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,7 +124,10 @@ export default function PlayScreen() {
       );
       const matchedIds = found.flatMap((t) => (t.existing_toy_id ? [t.existing_toy_id] : []));
       selectToys([...chosenToys, ...matchedIds]);
-      setSpotted({ matched: matchedIds.length, newToys: found.filter((t) => !t.existing_toy_id) });
+      setSpotted({
+        matched: matchedIds.length,
+        newToys: found.filter((t) => !t.existing_toy_id),
+      });
       setSnapping(false);
     } catch (e) {
       setError(errorMessage(e));
@@ -159,16 +168,17 @@ export default function PlayScreen() {
   async function getIdeas() {
     setBusy('ideas');
     setError(null);
+    const sentToys = noToys ? [] : chosenToys;
     try {
       const request: IdeaRequest = {
         setting,
         childIds: chosenChildren,
         guests,
         parentIds: chosenParents,
-        toyIds: chosenToys,
+        toyIds: sentToys,
         situation: situation.trim() || undefined,
       };
-      const libraryIds = await matchIdeas(chosenToys, chosenChildren, setting);
+      const libraryIds = await matchIdeas(sentToys, chosenChildren, setting);
       // Library ideas have no part for visiting friends, so ask for new ones too.
       const newIds =
         libraryIds.length === 0 || guests.length > 0 ? await generateIdeas(request) : [];
@@ -189,7 +199,9 @@ export default function PlayScreen() {
 
   if (data && data.children.length === 0) {
     return (
-      <FormScreen title="Let's play" intro="First, add your children so ideas can give each of them a role.">
+      <FormScreen
+        title="Let's play"
+        intro="First, add your children so ideas can give each of them a role.">
         <Button title="Add children" onPress={() => router.push('/family/child')} />
       </FormScreen>
     );
@@ -209,7 +221,10 @@ export default function PlayScreen() {
               label="Who's playing?"
               options={[
                 ...data.children.map((c) => ({ value: c.id, label: c.name })),
-                ...data.parents.map((p) => ({ value: p.userId, label: parentLabel(p, myUserId) })),
+                ...data.parents.map((p) => ({
+                  value: p.userId,
+                  label: parentLabel(p, myUserId),
+                })),
               ]}
               values={[...chosenChildren, ...chosenParents]}
               onChange={(values) => {
@@ -224,109 +239,148 @@ export default function PlayScreen() {
             <View style={styles.section}>
               <ThemedText type="smallBold">Which toys?</ThemedText>
               <ThemedText themeColor="textSecondary">No toys yet.</ThemedText>
-              <Button title="Add toys" variant="secondary" onPress={() => router.push('/toys/add')} />
+              <Button
+                title="Add toys"
+                variant="secondary"
+                onPress={() => router.push('/toys/add')}
+              />
             </View>
           ) : (
             <View style={styles.section}>
               <ThemedText type="smallBold">Which toys?</ThemedText>
-              <View style={styles.row}>
-                <View style={styles.flex}>
-                  <Button
-                    title={allShownChosen ? 'Clear' : 'Select all'}
-                    variant="secondary"
-                    onPress={toggleShown}
-                    disabled={busy !== null || shownToys.length === 0}
-                  />
-                </View>
-                <View style={styles.flex}>
-                  <Button
-                    title="Snap what's out"
-                    variant="secondary"
-                    onPress={() => {
-                      setSpotted(null);
-                      setSnapping(true);
-                    }}
-                    disabled={busy !== null || snapping}
-                  />
-                </View>
-              </View>
-
-              {snapping && (
-                <Card style={styles.card}>
-                  <ThemedText>
-                    Photograph the toys you have with you, then Claude will select them.
-                  </ThemedText>
-                  <PhotoCollector
-                    submitLabel={(n) => (n === 1 ? 'Select toys in this photo' : `Select toys in ${n} photos`)}
-                    busyLabel="Looking for toys…"
-                    busy={busy === 'photo'}
-                    onSubmit={matchPhotos}
-                    onCancel={() => setSnapping(false)}
-                  />
-                </Card>
-              )}
-
-              {spotted && (
-                <Card style={styles.card}>
-                  <ThemedText>
-                    {spotted.matched === 0
-                      ? 'None of those are in your toys yet.'
-                      : `Selected ${spotted.matched} ${spotted.matched === 1 ? 'toy' : 'toys'} from your photos.`}
-                  </ThemedText>
-                  {spotted.newToys.length > 0 && (
-                    <>
-                      <ThemedText type="small" themeColor="textSecondary">
-                        Also spotted: {spotted.newToys.map((t) => t.name).join(', ')}
-                      </ThemedText>
-                      <Button
-                        title={`Add these to ${newToyPlaceName ?? 'your toys'} and select them`}
-                        onPress={addSpottedToys}
-                        busy={busy === 'adding'}
-                        disabled={busy !== null && busy !== 'adding'}
-                      />
-                    </>
-                  )}
-                  <Button title="Dismiss" variant="secondary" onPress={() => setSpotted(null)} />
-                </Card>
-              )}
-
-              {data.places.length > 1 && (
-                <ChipGroup
-                  label="Toys from"
-                  options={[
-                    ...data.places.map((p) => ({ value: p.id, label: p.name })),
-                    { value: ALL_PLACES, label: 'All places' },
-                  ]}
-                  value={currentToyPlace}
-                  onChange={(id) => {
-                    setToyPlace(id);
-                    setSpotted(null);
-                  }}
-                />
-              )}
-
-              {shownToys.length === 0 ? (
-                <ThemedText themeColor="textSecondary">No toys kept here yet.</ThemedText>
+              <SegmentedTabs
+                options={[
+                  { value: 'with', label: 'With toys' },
+                  { value: 'none', label: 'No toys' },
+                ]}
+                value={noToys ? 'none' : 'with'}
+                onChange={(v) => {
+                  setNoToys(v === 'none');
+                  setSnapping(false);
+                  setSpotted(null);
+                }}
+                disabled={busy !== null}
+              />
+              {noToys ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  You&apos;ll get games that need no toys at all, to suit where you are.
+                </ThemedText>
               ) : (
-                <MultiChipGroup
-                  options={shownToys.map((t) => ({ value: t.id, label: t.name }))}
-                  values={chosenToys.filter((id) => shownToys.some((t) => t.id === id))}
-                  onChange={(values) =>
-                    selectToys([
-                      ...chosenToys.filter((id) => !shownToys.some((t) => t.id === id)),
-                      ...values,
-                    ])
-                  }
-                />
-              )}
+                <>
+                  <View style={styles.row}>
+                    <View style={styles.flex}>
+                      <Button
+                        title={allShownChosen ? 'Clear' : 'Select all'}
+                        variant="secondary"
+                        onPress={toggleShown}
+                        disabled={busy !== null || shownToys.length === 0}
+                      />
+                    </View>
+                    <View style={styles.flex}>
+                      <Button
+                        title="Snap what's out"
+                        variant="secondary"
+                        onPress={() => {
+                          setSpotted(null);
+                          setSnapping(true);
+                        }}
+                        disabled={busy !== null || snapping}
+                      />
+                    </View>
+                  </View>
 
-              <ThemedText type="small" themeColor="textSecondary">
-                {chosenToys.length === 0
-                  ? "No toys with you? Leave these unselected and you'll get games that need no toys, to suit where you are."
-                  : `${chosenToys.length} ${chosenToys.length === 1 ? 'toy' : 'toys'} selected${
-                      chosenElsewhere > 0 ? `, including ${chosenElsewhere} from other places` : ''
-                    }. Each idea uses a few of them.`}
-              </ThemedText>
+                  {snapping && (
+                    <Card style={styles.card}>
+                      <ThemedText>
+                        Photograph the toys you have with you, then Claude will select them.
+                      </ThemedText>
+                      <PhotoCollector
+                        submitLabel={(n) =>
+                          n === 1 ? 'Select toys in this photo' : `Select toys in ${n} photos`
+                        }
+                        busyLabel="Looking for toys…"
+                        busy={busy === 'photo'}
+                        onSubmit={matchPhotos}
+                        onCancel={() => setSnapping(false)}
+                      />
+                    </Card>
+                  )}
+
+                  {spotted && (
+                    <Card style={styles.card}>
+                      <ThemedText>
+                        {spotted.matched === 0
+                          ? 'None of those are in your toys yet.'
+                          : `Selected ${spotted.matched} ${spotted.matched === 1 ? 'toy' : 'toys'} from your photos.`}
+                      </ThemedText>
+                      {spotted.newToys.length > 0 && (
+                        <>
+                          <ThemedText type="small" themeColor="textSecondary">
+                            Also spotted: {spotted.newToys.map((t) => t.name).join(', ')}
+                          </ThemedText>
+                          <Button
+                            title={`Add these to ${newToyPlaceName ?? 'your toys'} and select them`}
+                            onPress={addSpottedToys}
+                            busy={busy === 'adding'}
+                            disabled={busy !== null && busy !== 'adding'}
+                          />
+                        </>
+                      )}
+                      <Button
+                        title="Dismiss"
+                        variant="secondary"
+                        onPress={() => setSpotted(null)}
+                      />
+                    </Card>
+                  )}
+
+                  {data.places.length > 1 && (
+                    <ChipGroup
+                      label="Toys from"
+                      options={[
+                        ...data.places.map((p) => ({
+                          value: p.id,
+                          label: p.name,
+                        })),
+                        { value: ALL_PLACES, label: 'All places' },
+                      ]}
+                      value={currentToyPlace}
+                      onChange={(id) => {
+                        setToyPlace(id);
+                        setSpotted(null);
+                      }}
+                    />
+                  )}
+
+                  {shownToys.length === 0 ? (
+                    <ThemedText themeColor="textSecondary">No toys kept here yet.</ThemedText>
+                  ) : (
+                    <MultiChipGroup
+                      options={shownToys.map((t) => ({
+                        value: t.id,
+                        label: t.name,
+                      }))}
+                      values={chosenToys.filter((id) => shownToys.some((t) => t.id === id))}
+                      onChange={(values) =>
+                        selectToys([
+                          ...chosenToys.filter((id) => !shownToys.some((t) => t.id === id)),
+                          ...values,
+                        ])
+                      }
+                    />
+                  )}
+
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {chosenToys.length === 0
+                      ? 'Pick a few toys, or choose No toys above for games that need none.'
+                      : `${chosenToys.length} ${chosenToys.length === 1 ? 'toy' : 'toys'} selected${
+                          chosenElsewhere > 0
+                            ? `, including ${chosenElsewhere} from other places`
+                            : ''
+                        }. Each idea uses a few of them.`}
+                  </ThemedText>
+                </>
+              )}
             </View>
           )}
 
