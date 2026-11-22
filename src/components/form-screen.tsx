@@ -10,13 +10,20 @@ type FormScreenProps = {
   title: string;
   intro?: string;
   children: ReactNode;
+  /**
+   * Set on tab screens: the tab bar already sits above the phone's bottom
+   * navigation, so the screen mustn't leave room for it again.
+   */
+  inTabs?: boolean;
 };
 
 /** A scrollable, keyboard-aware screen with a title, for short forms. */
-export function FormScreen({ title, intro, children }: FormScreenProps) {
+export function FormScreen({ title, intro, children, inTabs }: FormScreenProps) {
   return (
     <ThemedView style={styles.fill}>
-      <SafeAreaView style={styles.fill}>
+      <SafeAreaView
+        style={styles.fill}
+        edges={inTabs ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom']}>
         <KeyboardAvoidingView
           style={styles.fill}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>

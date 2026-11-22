@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 
 type ScrollScreenProps = {
   children: ReactNode;
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   content: {
     gap: Spacing.four,
     padding: Spacing.four,
-    paddingBottom: BottomTabInset + Spacing.four,
+    paddingBottom: Spacing.five,
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',

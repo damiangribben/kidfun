@@ -13,7 +13,7 @@ import { ChipGroup } from '@/components/ui/chip-group';
 import { MultiChipGroup } from '@/components/ui/multi-chip-group';
 import { SegmentedTabs } from '@/components/ui/segmented-tabs';
 import { TextField } from '@/components/ui/text-field';
-import { BottomTabInset, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import {
   errorMessage,
@@ -195,6 +195,7 @@ export default function PlayScreen() {
   if (data && data.children.length === 0) {
     return (
       <FormScreen
+        inTabs
         title="Let's play"
         intro="First, add your children so ideas can give each of them a role.">
         <Button title="Add children" onPress={() => router.push('/family/child')} />
@@ -204,6 +205,7 @@ export default function PlayScreen() {
 
   return (
     <FormScreen
+      inTabs
       title="Let's play"
       intro="Pick where you are, who's playing and any toys you have, and Claude will come up with a few ideas.">
       {!data && !error && <ThemedText themeColor="textSecondary">Loading…</ThemedText>}
@@ -404,7 +406,6 @@ export default function PlayScreen() {
         disabled={!data || busy !== null || chosenChildren.length + guests.length === 0}
       />
 
-      <View style={{ height: BottomTabInset }} />
     </FormScreen>
   );
 }

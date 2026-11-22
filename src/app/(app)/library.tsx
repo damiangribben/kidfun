@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { FormError, FormScreen } from '@/components/form-screen';
 import { ThemedText } from '@/components/themed-text';
 import { ListRow } from '@/components/ui/list-row';
-import { BottomTabInset, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { errorMessage } from '@/lib/family';
 import { listIdeas, type Idea } from '@/lib/ideas';
 
@@ -36,7 +36,7 @@ export default function LibraryScreen() {
   );
 
   return (
-    <FormScreen title="Library" intro="Every idea you've had, best rated first.">
+    <FormScreen inTabs title="Library" intro="Every idea you've had, best rated first.">
       <FormError message={error} />
       {!ideas && !error && <ThemedText themeColor="textSecondary">Loading…</ThemedText>}
       {ideas?.length === 0 && (
@@ -54,7 +54,6 @@ export default function LibraryScreen() {
           />
         ))}
       </View>
-      <View style={{ height: BottomTabInset }} />
     </FormScreen>
   );
 }
