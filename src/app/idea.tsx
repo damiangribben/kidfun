@@ -92,6 +92,7 @@ export default function IdeaScreen() {
             )}
 
             <Section title="You'll need">
+              {idea.content.toys.length === 0 && <ThemedText>No toys needed</ThemedText>}
               {idea.content.toys.map((toy) => (
                 <ThemedText key={toy.toy_id}>
                   • {toy.name}

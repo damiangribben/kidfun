@@ -37,9 +37,42 @@ export const SETTINGS = [
   { value: 'indoors', label: 'Indoors' },
   { value: 'garden', label: 'Garden' },
   { value: 'park', label: 'Park' },
+  { value: 'car', label: 'Car' },
 ] as const;
 
-export type Setting = (typeof SETTINGS)[number]['value'];
+/** A built-in setting, or "custom:<id>" for one of the household's own places to play. */
+export type Setting = string;
+
+export type PlayLocation = { id: string; name: string };
+
+export const customSetting = (location: PlayLocation): Setting => `custom:${location.id}`;
+
+/** The household's own places to play, such as "Beach" or "Restaurant". */
+export async function listPlayLocations(): Promise<PlayLocation[]> {
+  const { data, error } = await supabase.from('play_locations').select('id, name').order('name');
+  if (error) throw new FriendlyError(error.message);
+  return data;
+}
+
+export async function addPlayLocation(name: string): Promise<PlayLocation> {
+  const { data, error } = await supabase
+    .from('play_locations')
+    .insert({ name: name.trim() })
+    .select('id, name')
+    .single();
+  if (error) {
+    throw new FriendlyError(
+      error.code === '23505' ? `You already have "${name.trim()}".` : error.message,
+    );
+  }
+  return data;
+}
+
+/** Removes a place to play. Ideas made for it stay in the library. */
+export async function deletePlayLocation(id: string): Promise<void> {
+  const { error } = await supabase.from('play_locations').delete().eq('id', id);
+  if (error) throw new FriendlyError(error.message);
+}
 
 /** A friend playing today only; never saved. */
 export type GuestChild = {

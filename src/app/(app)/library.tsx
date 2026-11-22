@@ -11,7 +11,7 @@ import { listIdeas, type Idea } from '@/lib/ideas';
 
 function subtitle(idea: Idea) {
   const score = idea.score > 0 ? `👍 +${idea.score}` : idea.score < 0 ? `👎 ${idea.score}` : null;
-  return [score, idea.content.toys.map((t) => t.name).join(' · ')].filter(Boolean).join('  ·  ');
+  return [score, (idea.content.toys.length ? idea.content.toys.map((t) => t.name).join(' · ') : 'No toys needed')].filter(Boolean).join('  ·  ');
 }
 
 /** Every idea you've had, best rated first. */

@@ -31,7 +31,9 @@ export function IdeaCard({ idea, onOpen, onRate, busy, missingToys }: IdeaCardPr
         </ThemedText>
         <ThemedText>{idea.pitch}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {idea.content.toys.map((t) => t.name).join(' · ')}
+          {idea.content.toys.length
+            ? idea.content.toys.map((t) => t.name).join(' · ')
+            : 'No toys needed'}
         </ThemedText>
         {missingToys && missingToys.length > 0 && (
           <ThemedText type="small" themeColor="textSecondary">

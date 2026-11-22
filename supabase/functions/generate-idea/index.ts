@@ -17,7 +17,8 @@ const SYSTEM = `You invent play ideas for a family. A parent is stuck on "what s
 
 What makes a good idea:
 - It is built around some of the chosen toys; they are the stars. Each idea picks the handful (usually 2 to 5) that combine best; no idea needs to use every toy. Favour toys that rarely get played with. Indoors, everyday household things (paper, pens, cushions, blankets, cardboard boxes, tape) can support them; outdoors, natural things (grass, sticks, leaves, stones, trees, paths, benches) can.
-- It suits where they are playing, given in <setting>. Indoors: mind the space and keep it calm enough for a house. Garden: room to run, hide, dig and explore. Park: a public space with other people around, so nothing that needs setting up at home, nothing that leaves toys unattended, and keep the children within sight.
+- If no toys are offered, invent games that need no toys at all: voices, bodies, imagination, and only what is naturally and safely there in that setting.
+- It suits where they are playing, given in <setting>, and must be safe and practical there. Indoors: mind the space and keep it calm enough for a house. Garden: room to run, hide, dig and explore. Park: a public space with other people around, so nothing that needs setting up at home, nothing that leaves toys unattended, and keep the children within sight. Car: the children are strapped into car seats and can't move about, so no running, chasing, throwing, dropping small pieces or anything that needs space; talking, singing, spotting, counting, guessing and imagination games work; the parent may be driving, so their part must be hands-free and never need them to look away from the road. Anywhere else: work out what is sensible, safe and polite for that place.
 - Every child playing has a real part. Children of different ages play together, each with a role that fits their age: a 2-year-old can fetch, sort, knock down, deliver or be a character; a 5-year-old can plan, build, draw maps and signs, count or keep score.
 - Friends visiting for the day are players too. They don't know these toys, so give them a part that's easy to pick up straight away, and mix them in with the family's children rather than leaving them on their own.
 - Children can each keep their own creation but connect them (roads, bridges, post routes, visitors, shops), rather than having to share one.
@@ -64,12 +65,13 @@ function ageLabel(months: number): string {
 }
 
 // Where the family is playing. Must match the app's setting choices.
+// Households can also add their own places, sent as "custom:<play_locations id>".
 const SETTINGS = {
   indoors: "Indoors",
   garden: "In the garden",
-  park: "At the park; the toys are the ones they've brought with them",
+  park: "At the park; any toys are the ones they've brought with them",
+  car: "In the car on a journey; the children are in car seats",
 } as const;
-type Setting = keyof typeof SETTINGS;
 
 const MAX_GUESTS = 6;
 const GENDER_WORDS = { boy: "boy", girl: "girl", unspecified: "child" } as const;
@@ -109,15 +111,27 @@ function outputSchema(toyIds: string[], childIds: string[]) {
   const idea = {
     type: "object",
     additionalProperties: false,
-    required: ["name", "pitch", "toy_ids", "setup", "child_roles", "parent_role"],
+    required: [
+      "name",
+      "pitch",
+      ...(toyIds.length ? ["toy_ids"] : []),
+      "setup",
+      "child_roles",
+      "parent_role",
+    ],
     properties: {
       name: { type: "string", description: "Catchy name, at most 6 words" },
       pitch: { type: "string", description: "One sentence to read out to the children" },
-      toy_ids: {
-        type: "array",
-        description: "The chosen toys this idea uses (a subset is fine)",
-        items: { type: "string", enum: toyIds },
-      },
+      // No toys offered means toy-free ideas, so there's nothing to list.
+      ...(toyIds.length
+        ? {
+          toy_ids: {
+            type: "array",
+            description: "The chosen toys this idea uses (a subset is fine)",
+            items: { type: "string", enum: toyIds },
+          },
+        }
+        : {}),
       setup: { type: "array", description: "2 to 5 short setup steps", items: { type: "string" } },
       child_roles: {
         type: "array",
@@ -156,9 +170,24 @@ Deno.serve(async (req) => {
       typeof body?.situation === "string" ? body.situation.trim().slice(0, MAX_SITUATION) : "";
     const count = Math.min(Math.max(Number(body?.count) || DEFAULT_COUNT, 1), MAX_COUNT);
     const guests = readGuests(body?.guests);
-    const setting: Setting = body?.setting in SETTINGS ? body.setting : "indoors";
     if (childIds.length + guests.length === 0) throw new HttpError(400, "Choose at least one child.");
-    if (toyIds.length === 0) throw new HttpError(400, "Choose at least one toy.");
+
+    // Where they're playing: a built-in setting, or one of the household's own places.
+    let setting = "indoors";
+    let settingText: string = SETTINGS.indoors;
+    if (typeof body?.setting === "string" && body.setting in SETTINGS) {
+      setting = body.setting;
+      settingText = SETTINGS[body.setting as keyof typeof SETTINGS];
+    } else if (typeof body?.setting === "string" && body.setting.startsWith("custom:")) {
+      const { data: place } = await supabase
+        .from("play_locations")
+        .select("id, name")
+        .eq("id", body.setting.slice("custom:".length))
+        .maybeSingle();
+      if (!place) throw new HttpError(400, "That place couldn't be found. Please refresh.");
+      setting = `custom:${place.id}`;
+      settingText = `Somewhere the family has named: ${place.name}`;
+    }
 
     // Row-level security limits every read to the caller's household.
     const [childrenRes, toysRes, parentsRes] = await Promise.all([
@@ -181,19 +210,26 @@ Deno.serve(async (req) => {
       throw new HttpError(400, "Some of those children or toys couldn't be found. Please refresh.");
     }
 
-    // Ideas already made with any of these toys, so new ones don't repeat them.
-    const { data: related } = await supabase
-      .from("idea_toys")
-      .select("ideas(name)")
-      .in("toy_id", toyIds)
-      .limit(80);
-    const existingNames = [
-      ...new Set(
-        (related ?? [])
-          .map((r) => (r as unknown as { ideas: { name: string } | null }).ideas?.name)
-          .filter(Boolean),
-      ),
-    ].slice(0, 30);
+    // Ideas already made with any of these toys (or, with no toys, for this
+    // setting), so new ones don't repeat them.
+    let earlier: (string | undefined)[] = [];
+    if (toyIds.length) {
+      const { data } = await supabase
+        .from("idea_toys")
+        .select("ideas(name)")
+        .in("toy_id", toyIds)
+        .limit(80);
+      earlier = (data ?? []).map((r) => (r as unknown as { ideas: { name: string } | null }).ideas?.name);
+    } else {
+      const { data } = await supabase
+        .from("ideas")
+        .select("name")
+        .eq("content->>setting", setting)
+        .order("created_at", { ascending: false })
+        .limit(40);
+      earlier = (data ?? []).map((r) => r.name as string);
+    }
+    const existingNames = [...new Set(earlier.filter(Boolean))].slice(0, 30);
 
     const ages = new Map(children.map((c) => [c.id, ageInMonths(c.birth_date)]));
     const playersBlock = [
@@ -217,13 +253,15 @@ Deno.serve(async (req) => {
 
     const userContent = [
       `<players>\n${playersBlock}\n</players>`,
-      `<setting>\n${SETTINGS[setting]}\n</setting>`,
-      `<toys>\n${toysBlock}\n</toys>`,
+      `<setting>\n${settingText}\n</setting>`,
+      `<toys>\n${toysBlock || "None: the family has no toys with them."}\n</toys>`,
       situation ? `<situation>\n${situation}\n</situation>` : "",
       existingNames.length
         ? `<ideas_already_made>\n${existingNames.map((n) => `- ${n}`).join("\n")}\n</ideas_already_made>\nCome up with ideas clearly different from these.`
         : "",
-      `Invent ${count} different play ideas for these players, each using some of these toys.`,
+      toyIds.length
+        ? `Invent ${count} different play ideas for these players, each using some of these toys.`
+        : `Invent ${count} different play ideas for these players that need no toys at all and suit where they are.`,
     ].filter(Boolean).join("\n\n");
 
     const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });

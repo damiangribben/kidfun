@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { FormError, FormScreen } from '@/components/form-screen';
 import { GuestChildren } from '@/components/guest-children';
 import { PhotoCollector } from '@/components/photo-collector';
+import { PlayLocationPicker } from '@/components/play-location-picker';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -26,7 +27,6 @@ import {
 import {
   generateIdeas,
   matchIdeas,
-  SETTINGS,
   type GuestChild,
   type IdeaRequest,
   type Setting,
@@ -198,16 +198,11 @@ export default function PlayScreen() {
   return (
     <FormScreen
       title="Let's play"
-      intro="Pick where you are, who's playing and some toys, and Claude will come up with a few ideas.">
+      intro="Pick where you are, who's playing and any toys you have, and Claude will come up with a few ideas.">
       {!data && !error && <ThemedText themeColor="textSecondary">Loading…</ThemedText>}
       {data && (
         <>
-          <ChipGroup
-            label="Where are you playing?"
-            options={SETTINGS}
-            value={setting}
-            onChange={setSetting}
-          />
+          <PlayLocationPicker value={setting} onChange={setSetting} />
 
           <View style={styles.section}>
             <MultiChipGroup
@@ -327,7 +322,7 @@ export default function PlayScreen() {
 
               <ThemedText type="small" themeColor="textSecondary">
                 {chosenToys.length === 0
-                  ? 'Each idea uses a few of the toys you pick, so select all to explore everything.'
+                  ? "No toys with you? Leave these unselected and you'll get games that need no toys, to suit where you are."
                   : `${chosenToys.length} ${chosenToys.length === 1 ? 'toy' : 'toys'} selected${
                       chosenElsewhere > 0 ? `, including ${chosenElsewhere} from other places` : ''
                     }. Each idea uses a few of them.`}
@@ -351,12 +346,7 @@ export default function PlayScreen() {
         title={busy === 'ideas' ? 'Thinking up ideas…' : 'Get ideas'}
         onPress={getIdeas}
         busy={busy === 'ideas'}
-        disabled={
-          !data ||
-          busy !== null ||
-          chosenChildren.length + guests.length === 0 ||
-          chosenToys.length === 0
-        }
+        disabled={!data || busy !== null || chosenChildren.length + guests.length === 0}
       />
 
       <View style={{ height: BottomTabInset }} />
