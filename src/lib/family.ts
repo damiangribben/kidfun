@@ -4,7 +4,7 @@ import type { Tables, TablesInsert } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
 export type Child = Tables<'children'>;
-export type ChildInput = Pick<TablesInsert<'children'>, 'name' | 'birth_date' | 'favourites' | 'notes'>;
+export type ChildInput = Pick<TablesInsert<'children'>, 'name' | 'birth_date' | 'favourites'>;
 export type Place = Pick<Tables<'places'>, 'id' | 'name'> & { toyCount: number };
 
 const UNIQUE_VIOLATION = '23505';

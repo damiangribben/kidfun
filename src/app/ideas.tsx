@@ -82,7 +82,7 @@ export default function IdeasScreen() {
     const idea = ideas?.get(id);
     if (!idea) return null;
     const missing = idea.content.toys
-      .filter((t) => !request.toyIds.includes(t.toy_id))
+      .filter((t) => !t.toy_id || !request.toyIds.includes(t.toy_id))
       .map((t) => t.name);
     return (
       <IdeaCard

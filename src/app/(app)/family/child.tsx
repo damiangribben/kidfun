@@ -23,7 +23,6 @@ export default function ChildScreen() {
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [favourites, setFavourites] = useState('');
-  const [notes, setNotes] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +33,6 @@ export default function ChildScreen() {
         setName(child.name);
         setBirthDate(parseDate(child.birth_date));
         setFavourites(child.favourites ?? '');
-        setNotes(child.notes ?? '');
       })
       .catch((e) => setError(errorMessage(e)))
       .finally(() => setLoading(false));
@@ -49,7 +47,6 @@ export default function ChildScreen() {
         name: name.trim(),
         birth_date: toDateString(birthDate),
         favourites: favourites.trim() || null,
-        notes: notes.trim() || null,
       });
       router.back();
     } catch (e) {
@@ -103,15 +100,6 @@ export default function ChildScreen() {
         placeholder="e.g. Magna-Tiles, drawing, dinosaurs"
         multiline
         maxLength={500}
-        style={styles.multiline}
-      />
-      <TextField
-        label="Notes (optional)"
-        value={notes}
-        onChangeText={setNotes}
-        placeholder="e.g. loves being in charge, gets frustrated with fiddly bits"
-        multiline
-        maxLength={1000}
         style={styles.multiline}
       />
       <FormError message={error} />

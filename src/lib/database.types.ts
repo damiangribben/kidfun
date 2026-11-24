@@ -22,7 +22,6 @@ export type Database = {
           household_id: string
           id: string
           name: string
-          notes: string | null
           updated_at: string
         }
         Insert: {
@@ -32,7 +31,6 @@ export type Database = {
           household_id?: string
           id?: string
           name: string
-          notes?: string | null
           updated_at?: string
         }
         Update: {
@@ -42,7 +40,6 @@ export type Database = {
           household_id?: string
           id?: string
           name?: string
-          notes?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -54,6 +51,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      global_ideas: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          model: string
+          name: string
+          pitch: string
+          place_description: string | null
+          setting: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          id?: string
+          model: string
+          name: string
+          pitch: string
+          place_description?: string | null
+          setting: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          model?: string
+          name?: string
+          pitch?: string
+          place_description?: string | null
+          setting?: string
+        }
+        Relationships: []
       }
       household_members: {
         Row: {
@@ -228,39 +258,46 @@ export type Database = {
       }
       ideas: {
         Row: {
-          content: Json
           created_at: string
           created_by: string | null
+          global_idea_id: string
           household_id: string
           id: string
-          name: string
-          pitch: string
+          local: Json
           saved_at: string | null
+          setting: string
           supervise_closely: boolean
         }
         Insert: {
-          content: Json
           created_at?: string
           created_by?: string | null
+          global_idea_id: string
           household_id?: string
           id?: string
-          name: string
-          pitch: string
+          local?: Json
           saved_at?: string | null
+          setting?: string
           supervise_closely?: boolean
         }
         Update: {
-          content?: Json
           created_at?: string
           created_by?: string | null
+          global_idea_id?: string
           household_id?: string
           id?: string
-          name?: string
-          pitch?: string
+          local?: Json
           saved_at?: string | null
+          setting?: string
           supervise_closely?: boolean
         }
         Relationships: [
+          {
+            foreignKeyName: "ideas_global_idea_id_fkey"
+            columns: ["global_idea_id"]
+            isOneToOne: false
+            referencedRelation: "global_ideas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ideas_household_id_fkey"
             columns: ["household_id"]
@@ -452,9 +489,14 @@ export type Database = {
       save_idea: {
         Args: {
           child_ids: string[]
-          idea_content: Json
+          generic_content: Json
+          generic_place_description: string
+          generic_setting: string
+          idea_model: string
           idea_name: string
           idea_pitch: string
+          local_content: Json
+          local_setting: string
           parent_ids: string[]
           supervise: boolean
           toy_ids: string[]

@@ -114,7 +114,7 @@ export default function IdeaScreen() {
             )}
 
             {idea.content.child_roles.map((role) => (
-              <Section key={role.child_id} title={role.name}>
+              <Section key={role.key} title={role.name}>
                 <ThemedText>{role.role}</ThemedText>
               </Section>
             ))}

@@ -11,12 +11,6 @@ import { guestLabel, type GuestChild } from '@/lib/ideas';
 
 const MAX_GUESTS = 6;
 
-const GENDERS = [
-  { value: 'boy', label: 'Boy' },
-  { value: 'girl', label: 'Girl' },
-  { value: 'unspecified', label: "Don't say" },
-] as const;
-
 const AGES = Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }));
 
 type GuestChildrenProps = {
@@ -27,14 +21,12 @@ type GuestChildrenProps = {
 /** Friends playing today: added on the spot, removable, never saved. */
 export function GuestChildren({ guests, onChange }: GuestChildrenProps) {
   const [adding, setAdding] = useState(false);
-  const [gender, setGender] = useState<GuestChild['gender']>('unspecified');
   const [age, setAge] = useState<string | null>(null);
 
   function add() {
     if (!age) return;
-    onChange([...guests, { gender, age: Number(age) }]);
+    onChange([...guests, { age: Number(age) }]);
     setAdding(false);
-    setGender('unspecified');
     setAge(null);
   }
 
@@ -57,8 +49,7 @@ export function GuestChildren({ guests, onChange }: GuestChildrenProps) {
 
       {adding ? (
         <Card style={styles.card}>
-          <ChipGroup label="Friend is a" options={GENDERS} value={gender} onChange={setGender} />
-          <ChipGroup label="Age" options={AGES} value={age ?? ''} onChange={setAge} />
+          <ChipGroup label="Friend's age" options={AGES} value={age ?? ''} onChange={setAge} />
           <View style={styles.row}>
             <View style={styles.flex}>
               <Button title="Cancel" variant="secondary" onPress={() => setAdding(false)} />
